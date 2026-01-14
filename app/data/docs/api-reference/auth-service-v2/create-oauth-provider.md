@@ -1,0 +1,686 @@
+---
+title: "Create Oauth Provider"
+url: "https://docs.langchain.com/api-reference/auth-service-v2/create-oauth-provider"
+section: "api-reference/auth-service-v2"
+last_modified: "2026-01-08T04:05:34.787Z"
+---
+ 
+
+[Skip to main content](#content-area)
+
+[Docs by LangChain home page![light logo](https://mintcdn.com/langchain-5e9cc07a/Xbr8HuVd9jPi6qTU/images/brand/langchain-docs-teal.svg?fit=max&auto=format&n=Xbr8HuVd9jPi6qTU&q=85&s=16111530672bf976cb54ef2143478342)![dark logo](https://mintcdn.com/langchain-5e9cc07a/Xbr8HuVd9jPi6qTU/images/brand/langchain-docs-lilac.svg?fit=max&auto=format&n=Xbr8HuVd9jPi6qTU&q=85&s=b70fb1a2208670492ef94aef14b680be)](/)
+
+LangSmith
+
+Search...
+
+⌘K
+
+-   [Support](https://support.langchain.com/)
+-   [GitHub](https://github.com/langchain-ai)
+-   [Try LangSmith](https://smith.langchain.com/)
+-   [
+    
+    Try LangSmith
+    
+    ](https://smith.langchain.com/)
+
+Search...
+
+Navigation
+
+Auth Service (v2)
+
+Create Oauth Provider
+
+[Get started
+
+](/langsmith/home)[Observability
+
+](/langsmith/observability)[Evaluation
+
+](/langsmith/evaluation)[Prompt engineering
+
+](/langsmith/prompt-engineering)[Deployment
+
+](/langsmith/deployments)[Platform setup
+
+](/langsmith/platform-setup)[Reference
+
+](/langsmith/reference)
+
+-   [
+    
+    Overview
+    
+    
+    
+    ](/langsmith/reference)
+
+-   [
+    
+    LangSmith Python SDK
+    
+    
+    
+    ](https://reference.langchain.com/python/langsmith/observability/sdk/)
+
+-   [
+    
+    LangSmith JS/TS SDK
+    
+    
+    
+    ](https://reference.langchain.com/javascript/modules/langsmith.html)
+
+-   [
+    
+    LangGraph Python SDK
+    
+    
+    
+    ](https://reference.langchain.com/python/langgraph/)
+
+-   [
+    
+    LangGraph JS/TS SDK
+    
+    
+    
+    ](https://reference.langchain.com/javascript/modules/_langchain_langgraph-sdk.html)
+
+-   [
+    
+    LangSmith API
+    
+    
+    
+    ](https://api.smith.langchain.com/redoc)
+
+##### LangSmith Deployment
+
+-   Agent Server API
+    
+-   Control Plane API
+    
+    -   [
+        
+        Overview
+        
+        
+        
+        ](/langsmith/api-ref-control-plane)
+    -   Integrations (v1)
+        
+    -   Deployments (v2)
+        
+    -   Listeners (v2)
+        
+    -   Auth Service (v2)
+        
+        -   [GET
+            
+            List Oauth Providers
+            
+            
+            
+            ](/api-reference/auth-service-v2/list-oauth-providers)
+        -   [POST
+            
+            Create Oauth Provider
+            
+            
+            
+            ](/api-reference/auth-service-v2/create-oauth-provider)
+        -   [GET
+            
+            Oauth Setup Callback
+            
+            
+            
+            ](/api-reference/auth-service-v2/oauth-setup-callback)
+        -   [GET
+            
+            Oauth Callback Get
+            
+            
+            
+            ](/api-reference/auth-service-v2/oauth-callback-get)
+        -   [POST
+            
+            Oauth Callback
+            
+            
+            
+            ](/api-reference/auth-service-v2/oauth-callback)
+        -   [POST
+            
+            Authenticate
+            
+            
+            
+            ](/api-reference/auth-service-v2/authenticate)
+        -   [GET
+            
+            Wait For Auth Completion
+            
+            
+            
+            ](/api-reference/auth-service-v2/wait-for-auth-completion)
+        -   [POST
+            
+            Create Mcp Oauth Provider
+            
+            
+            
+            ](/api-reference/auth-service-v2/create-mcp-oauth-provider)
+        -   [GET
+            
+            Get Oauth Provider
+            
+            
+            
+            ](/api-reference/auth-service-v2/get-oauth-provider)
+        -   [DEL
+            
+            Delete Oauth Provider
+            
+            
+            
+            ](/api-reference/auth-service-v2/delete-oauth-provider)
+        -   [PATCH
+            
+            Update Oauth Provider
+            
+            
+            
+            ](/api-reference/auth-service-v2/update-oauth-provider)
+        -   [GET
+            
+            Check Oauth Token Exists
+            
+            
+            
+            ](/api-reference/auth-service-v2/check-oauth-token-exists)
+        -   [DEL
+            
+            Delete Oauth Tokens For User
+            
+            
+            
+            ](/api-reference/auth-service-v2/delete-oauth-tokens-for-user)
+-   [
+    
+    LangGraph CLI
+    
+    
+    
+    ](/langsmith/cli)
+-   [
+    
+    RemoteGraph
+    
+    
+    
+    ](https://reference.langchain.com/python/langsmith/deployment/remote_graph/)
+-   [
+    
+    Agent Server environment variables
+    
+    
+    
+    ](/langsmith/env-var)
+
+##### Releases
+
+-   [
+    
+    Agent Server changelog
+    
+    
+    
+    ](/langsmith/agent-server-changelog)
+-   [
+    
+    Self-hosted changelog
+    
+    
+    
+    ](/langsmith/self-hosted-changelog)
+-   [
+    
+    Release versions
+    
+    
+    
+    ](/langsmith/release-versions)
+
+Create Oauth Provider
+
+cURL
+
+Copy
+
+```
+curl --request POST \
+  --url https://api.example.com/v2/auth/providers \
+  --header 'Content-Type: application/json' \
+  --data '
+{
+  "provider_id": "<string>",
+  "name": "<string>",
+  "client_id": "<string>",
+  "auth_url": "<string>",
+  "token_url": "<string>",
+  "client_secret": "<string>",
+  "uses_pkce": false,
+  "code_challenge_method": "S256",
+  "token_endpoint_auth_method": "client_secret_post"
+}
+'
+```
+
+200
+
+422
+
+Copy
+
+```
+{
+  "id": "<string>",
+  "organization_id": "<string>",
+  "provider_id": "<string>",
+  "name": "<string>",
+  "client_id": "<string>",
+  "auth_url": "<string>",
+  "token_url": "<string>",
+  "uses_pkce": true,
+  "code_challenge_method": "<string>",
+  "created_at": "2023-11-07T05:31:56Z",
+  "updated_at": "2023-11-07T05:31:56Z",
+  "provider_type": "<string>",
+  "mcp_server_url": "<string>",
+  "token_endpoint_auth_method": "client_secret_post",
+  "is_dynamic_client": false
+}
+```
+
+[LangSmith Deployment](/langsmith/server-api-ref)
+
+[Control Plane API](/langsmith/api-ref-control-plane)
+
+[Auth Service (v2)](/api-reference/auth-service-v2/list-oauth-providers)
+
+# Create Oauth Provider
+
+Copy page
+
+Create a new OAuth provider manually.
+
+Copy page
+
+POST
+
+/
+
+v2
+
+/
+
+auth
+
+/
+
+providers
+
+Try it
+
+Create Oauth Provider
+
+cURL
+
+Copy
+
+```
+curl --request POST \
+  --url https://api.example.com/v2/auth/providers \
+  --header 'Content-Type: application/json' \
+  --data '
+{
+  "provider_id": "<string>",
+  "name": "<string>",
+  "client_id": "<string>",
+  "auth_url": "<string>",
+  "token_url": "<string>",
+  "client_secret": "<string>",
+  "uses_pkce": false,
+  "code_challenge_method": "S256",
+  "token_endpoint_auth_method": "client_secret_post"
+}
+'
+```
+
+200
+
+422
+
+Copy
+
+```
+{
+  "id": "<string>",
+  "organization_id": "<string>",
+  "provider_id": "<string>",
+  "name": "<string>",
+  "client_id": "<string>",
+  "auth_url": "<string>",
+  "token_url": "<string>",
+  "uses_pkce": true,
+  "code_challenge_method": "<string>",
+  "created_at": "2023-11-07T05:31:56Z",
+  "updated_at": "2023-11-07T05:31:56Z",
+  "provider_type": "<string>",
+  "mcp_server_url": "<string>",
+  "token_endpoint_auth_method": "client_secret_post",
+  "is_dynamic_client": false
+}
+```
+
+#### Body
+
+application/json
+
+Request model for creating OAuth provider manually.
+
+[​
+
+](#body-provider-id)
+
+provider\_id
+
+string
+
+required
+
+[​
+
+](#body-name)
+
+name
+
+string
+
+required
+
+[​
+
+](#body-client-id)
+
+client\_id
+
+string
+
+required
+
+[​
+
+](#body-auth-url)
+
+auth\_url
+
+string
+
+required
+
+[​
+
+](#body-token-url)
+
+token\_url
+
+string
+
+required
+
+[​
+
+](#body-client-secret-one-of-0)
+
+client\_secret
+
+string | null
+
+[​
+
+](#body-uses-pkce)
+
+uses\_pkce
+
+boolean
+
+default:false
+
+[​
+
+](#body-code-challenge-method)
+
+code\_challenge\_method
+
+string
+
+default:S256
+
+[​
+
+](#body-token-endpoint-auth-method)
+
+token\_endpoint\_auth\_method
+
+enum<string>
+
+default:client\_secret\_post
+
+Available options:
+
+`none`,
+
+`client_secret_basic`,
+
+`client_secret_post`
+
+#### Response
+
+200
+
+application/json
+
+Successful Response
+
+Response model for OAuth provider.
+
+[​
+
+](#response-id)
+
+id
+
+string
+
+required
+
+[​
+
+](#response-organization-id)
+
+organization\_id
+
+string
+
+required
+
+[​
+
+](#response-provider-id)
+
+provider\_id
+
+string
+
+required
+
+[​
+
+](#response-name)
+
+name
+
+string
+
+required
+
+[​
+
+](#response-client-id)
+
+client\_id
+
+string
+
+required
+
+[​
+
+](#response-auth-url)
+
+auth\_url
+
+string
+
+required
+
+[​
+
+](#response-token-url)
+
+token\_url
+
+string
+
+required
+
+[​
+
+](#response-uses-pkce)
+
+uses\_pkce
+
+boolean
+
+required
+
+[​
+
+](#response-code-challenge-method-one-of-0)
+
+code\_challenge\_method
+
+string | null
+
+required
+
+[​
+
+](#response-created-at)
+
+created\_at
+
+string<date-time>
+
+required
+
+[​
+
+](#response-updated-at)
+
+updated\_at
+
+string<date-time>
+
+required
+
+[​
+
+](#response-provider-type-one-of-0)
+
+provider\_type
+
+string | null
+
+[​
+
+](#response-mcp-server-url-one-of-0)
+
+mcp\_server\_url
+
+string | null
+
+[​
+
+](#response-token-endpoint-auth-method)
+
+token\_endpoint\_auth\_method
+
+string
+
+default:client\_secret\_post
+
+[​
+
+](#response-is-dynamic-client)
+
+is\_dynamic\_client
+
+boolean
+
+default:false
+
+Was this page helpful?
+
+YesNo
+
+[
+
+List Oauth Providers
+
+Previous
+
+
+
+](/api-reference/auth-service-v2/list-oauth-providers)[
+
+Oauth Setup Callback
+
+Next
+
+
+
+](/api-reference/auth-service-v2/oauth-setup-callback)
+
+⌘I
+
+[Docs by LangChain home page![light logo](https://mintcdn.com/langchain-5e9cc07a/Xbr8HuVd9jPi6qTU/images/brand/langchain-docs-teal.svg?fit=max&auto=format&n=Xbr8HuVd9jPi6qTU&q=85&s=16111530672bf976cb54ef2143478342)![dark logo](https://mintcdn.com/langchain-5e9cc07a/Xbr8HuVd9jPi6qTU/images/brand/langchain-docs-lilac.svg?fit=max&auto=format&n=Xbr8HuVd9jPi6qTU&q=85&s=b70fb1a2208670492ef94aef14b680be)](/)
+
+[github](https://github.com/langchain-ai)[x](https://x.com/LangChain)[linkedin](https://www.linkedin.com/company/langchain/)[youtube](https://www.youtube.com/@LangChain)
+
+Resources
+
+[Forum](https://forum.langchain.com/)[Changelog](https://changelog.langchain.com/)[LangChain Academy](https://academy.langchain.com/)[Trust Center](https://trust.langchain.com/)
+
+Company
+
+[About](https://langchain.com/about)[Careers](https://langchain.com/careers)[Blog](https://blog.langchain.com/)
+
+[github](https://github.com/langchain-ai)[x](https://x.com/LangChain)[linkedin](https://www.linkedin.com/company/langchain/)[youtube](https://www.youtube.com/@LangChain)
+
+[Powered by](https://www.mintlify.com?utm_campaign=poweredBy&utm_medium=referral&utm_source=langchain-5e9cc07a)

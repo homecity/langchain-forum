@@ -1,0 +1,14 @@
+{
+  "name": "langchain-forum-parser",
+  "version": "1.0.0",
+  "description": "Parse LangChain forum data",
+  "scripts": {
+    "parse-forum": "ts-node scripts/parse-forum-data.ts",
+    "analyze-forum": "ts-node scripts/analyze-forum-data.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LangChain Forum Parsed Data",
+  "description": "Structured metadata extracted from LangChain forum markdown files",
+  "type": "object",
+  "required": ["posts", "totalPosts", "dateRange"],
+  "properties": {
+    "posts": {
+      "type": "array",
+      "description": "Array of parsed forum posts",
+      "items": {
+        "$ref": "#/definitions/ForumPost"
+      }
+    },
+    "totalPosts": {
+      "type": "integer",
+      "description": "Total number of successfully parsed posts",
+      "minimum": 0
+    },
+    "dateRange": {
+      "type": "object",
+      "description": "Date range of all posts",
+      "required": ["earliest", "latest"],
+      "properties": {
+        "earliest": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of the earliest post"
+        },
+        "latest": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of the latest post"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ForumPost": {
+      "type": "object",
+      "description": "A single forum post with extracted metadata",
+      "required": [
+        "topicId",
+        "title",
+        "created",
+        "url",
+        "tags",
+        "status",
+        "postCount",
+        "year",
+        "month"
+      ],
+      "properties": {
+        "topicId": {
+          "type": "string",
+          "description": "Unique forum topic identifier",
+          "pattern": "^[0-9]+$",
+          "examples": ["2094", "2591"]
+        },
+        "title": {
+          "type": "string",
+          "description": "Post title",
+          "minLength": 1,
+          "examples": [
+            "Deployments failing with recent langgraph-api update?",
+            "Cannot log in to Langsmith"
+          ]
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when the post was created",
+          "examples": ["2025-11-05T10:42:54.000Z"]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Direct URL to the forum post",
+          "pattern": "^https://forum\\.langchain\\.com/t/[0-9]+$",
+          "examples": ["https://forum.langchain.com/t/2094"]
+        },
+        "tags": {
+          "type": "array",
+          "description": "Auto-detected tags based on content keywords",
+          "items": {
+            "type": "string",
+            "enum": [
+              "langsmith",
+              "langgraph",
+              "langchain",
+              "deployment",
+              "auth",
+              "tracing",
+              "cloud",
+              "api",
+              "experiment",
+              "agent",
+              "middleware",
+              "tool",
+              "error"
+            ]
+          },
+          "uniqueItems": true,
+          "examples": [
+            ["deployment", "langgraph", "error"],
+            ["langsmith", "auth"]
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "Whether the post issue has been resolved",
+          "enum": ["SOLVED", "OPEN"],
+          "examples": ["SOLVED", "OPEN"]
+        },
+        "postCount": {
+          "type": "integer",
+          "description": "Number of posts in the thread (including original post)",
+          "minimum": 0,
+          "examples": [9, 1]
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year the post was created",
+          "minimum": 2025,
+          "examples": [2025, 2026]
+        },
+        "month": {
+          "type": "integer",
+          "description": "Month the post was created (1-12)",
+          "minimum": 1,
+          "maximum": 12,
+          "examples": [1, 11]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "posts": [
+        {
+          "topicId": "2094",
+          "title": "Deployments failing with recent langgraph-api update?",
+          "created": "2025-11-05T10:42:54.000Z",
+          "url": "https://forum.langchain.com/t/2094",
+          "tags": ["deployment", "langgraph", "error"],
+          "status": "SOLVED",
+          "postCount": 9,
+          "year": 2025,
+          "month": 11
+        }
+      ],
+      "totalPosts": 363,
+      "dateRange": {
+        "earliest": "2025-04-22T10:05:17.000Z",
+        "latest": "2026-01-13T00:40:46.000Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "metrics": {
+    "total": 363,
+    "resolved": 156,
+    "active": 207,
+    "resolutionRate": 43,
+    "avgResponseTime": 1.2,
+    "trends": {
+      "total": 39,
+      "resolved": 12,
+      "active": 27,
+      "resolutionRate": -1.4
+    }
+  },
+  "categoryDistribution": [
+    {
+      "name": "General",
+      "value": 226,
+      "percentage": 62.3
+    },
+    {
+      "name": "Python Help",
+      "value": 50,
+      "percentage": 13.8
+    },
+    {
+      "name": "Cloud",
+      "value": 38,
+      "percentage": 10.5
+    },
+    {
+      "name": "Js Help",
+      "value": 25,
+      "percentage": 6.9
+    },
+    {
+      "name": "Self Hosted",
+      "value": 10,
+      "percentage": 2.8
+    },
+    {
+      "name": "Langsmith Studio",
+      "value": 6,
+      "percentage": 1.7
+    },
+    {
+      "name": "Intro To Langgraph",
+      "value": 5,
+      "percentage": 1.4
+    },
+    {
+      "name": "Product Feedback",
+      "value": 1,
+      "percentage": 0.3
+    },
+    {
+      "name": "Ambient Agents With ",
+      "value": 1,
+      "percentage": 0.3
+    },
+    {
+      "name": "Intro To Langsmith",
+      "value": 1,
+      "percentage": 0.3
+    }
+  ],
+  "monthlyVolume": [
+    {
+      "month": "2025-04",
+      "issues": 2
+    },
+    {
+      "month": "2025-06",
+      "issues": 2
+    },
+    {
+      "month": "2025-07",
+      "issues": 106
+    },
+    {
+      "month": "2025-08",
+      "issues": 69
+    },
+    {
+      "month": "2025-09",
+      "issues": 72
+    },
+    {
+      "month": "2025-10",
+      "issues": 43
+    },
+    {
+      "month": "2025-11",
+      "issues": 29
+    },
+    {
+      "month": "2025-12",
+      "issues": 32
+    },
+    {
+      "month": "2026-01",
+      "issues": 8
+    }
+  ],
+  "tagResolution": [
+    {
+      "tag": "General",
+      "total": 226,
+      "resolved": 96,
+      "rate": 42.5
+    },
+    {
+      "tag": "Cloud",
+      "total": 53,
+      "resolved": 24,
+      "rate": 45.3
+    },
+    {
+      "tag": "Python Help",
+      "total": 50,
+      "resolved": 17,
+      "rate": 34
+    },
+    {
+      "tag": "Js Help",
+      "total": 25,
+      "resolved": 15,
+      "rate": 60
+    },
+    {
+      "tag": "Self Hosted",
+      "total": 22,
+      "resolved": 10,
+      "rate": 45.5
+    },
+    {
+      "tag": "Langsmith Studio",
+      "total": 16,
+      "resolved": 6,
+      "rate": 37.5
+    },
+    {
+      "tag": "Intro To Langgraph",
+      "total": 8,
+      "resolved": 5,
+      "rate": 62.5
+    },
+    {
+      "tag": "Product Feedback",
+      "total": 7,
+      "resolved": 2,
+      "rate": 28.6
+    },
+    {
+      "tag": "Intro To Langsmith",
+      "total": 4,
+      "resolved": 0,
+      "rate": 0
+    },
+    {
+      "tag": "Ambient Agents With ",
+      "total": 2,
+      "resolved": 2,
+      "rate": 100
+    }
+  ],
+  "recentActivity": [
+    {
+      "title": "Cannot log in to Langsmith",
+      "status": "OPEN",
+      "date": "2026-01-13 11:40:46",
+      "url": "https://forum.langchain.com/t/2719"
+    },
+    {
+      "title": "EU LangSmith tracing: runs dropped over 20MB + missing image previews after attachment chunking",
+      "status": "SOLVED",
+      "date": "2026-01-13 08:57:00",
+      "url": "https://forum.langchain.com/t/2717"
+    },
+    {
+      "title": "DeepAgent: What's the difference between a middleware and a tool?",
+      "status": "SOLVED",
+      "date": "2026-01-13 07:38:27",
+      "url": "https://forum.langchain.com/t/2677"
+    },
+    {
+      "title": "# [Bug/Question] Runtime Context Not Working in Deployed LangSmith Agent - Headers and Config Stripped",
+      "status": "OPEN",
+      "date": "2026-01-11 21:17:29",
+      "url": "https://forum.langchain.com/t/2705"
+    },
+    {
+      "title": "Alert notifications not triggering for tag-based",
+      "status": "OPEN",
+      "date": "2026-01-08 18:55:57",
+      "url": "https://forum.langchain.com/t/2689"
+    },
+    {
+      "title": "Prod Langsmith deployment raising internal redis errors",
+      "status": "SOLVED",
+      "date": "2026-01-05 08:32:26",
+      "url": "https://forum.langchain.com/t/2649"
+    },
+    {
+      "title": "Time Checkpoint memory backend for LangGraph: restart continuity + SHA receipts (private eval)",
+      "status": "OPEN",
+      "date": "2026-01-05 01:48:19",
+      "url": "https://forum.langchain.com/t/2662"
+    },
+    {
+      "title": "Create_agent + ToolStrategy: Tools + Structured Output Not Working Across Models (LangChain 1.0.2)",
+      "status": "SOLVED",
+      "date": "2026-01-05 01:48:15",
+      "url": "https://forum.langchain.com/t/2293"
+    },
+    {
+      "title": "Full experiment runs only 20 examples",
+      "status": "SOLVED",
+      "date": "2026-01-04 07:52:28",
+      "url": "https://forum.langchain.com/t/399"
+    },
+    {
+      "title": "Langsmith missing individual toolcall traces",
+      "status": "OPEN",
+      "date": "2026-01-03 21:46:18",
+      "url": "https://forum.langchain.com/t/2647"
+    }
+  ],
+  "generatedAt": "2026-01-14T05:05:05.487Z"
+}

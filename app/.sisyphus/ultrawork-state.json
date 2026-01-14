@@ -1,0 +1,7 @@
+{
+  "active": true,
+  "started_at": "2026-01-14T13:47:00.602Z",
+  "original_prompt": "대안으로 제시된 \" Dashboard, Chat, Evaluation\" 가 좋습니다.  제안된 Evaluation 페이지에 통합:\n  - LangSmith Evaluation Results\n  - Friction Log\n  - RAG Performance Metrics 진행 바랍니다. /ultrawork",
+  "reinforcement_count": 13,
+  "last_checked_at": "2026-01-14T23:45:23.262Z"
+}
