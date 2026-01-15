@@ -12,12 +12,15 @@ import {
   getSeverityColor,
   getStatusColor,
   getCategoryLabel,
+  getImpactColor,
+  exportToMarkdown,
 } from "@/lib/evaluation/friction-log-store"
 import {
   FrictionLogEntry,
   FrictionSeverity,
   FrictionCategory,
   FrictionStatus,
+  ImpactLevel,
 } from "@/lib/evaluation/types"
 import {
   Plus,
@@ -28,6 +31,11 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Download,
+  ExternalLink,
+  Lightbulb,
+  Zap,
+  BookOpen,
 } from "lucide-react"
 
 export function FrictionLog() {
@@ -71,6 +79,19 @@ export function FrictionLog() {
     }
   }
 
+  const handleExport = () => {
+    const markdown = exportToMarkdown(entries)
+    const blob = new Blob([markdown], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `friction-log-${new Date().toISOString().split('T')[0]}.md`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header with Filter */}
@@ -102,13 +123,23 @@ export function FrictionLog() {
           />
         </div>
 
-        <Button
-          onClick={() => setIsAddingNew(true)}
-          className="bg-purple-500 hover:bg-purple-600 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Entry
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleExport}
+            variant="outline"
+            className="font-mono"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button
+            onClick={() => setIsAddingNew(true)}
+            className="bg-purple-500 hover:bg-purple-600 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Entry
+          </Button>
+        </div>
       </div>
 
       {/* Add New Form */}
@@ -216,6 +247,12 @@ function FrictionEntryCard({
         </div>
 
         <div className="flex items-center gap-3">
+          {entry.impactLevel && (
+            <Badge variant="outline" className={`font-mono ${getImpactColor(entry.impactLevel)}`}>
+              <Zap className="h-3 w-3 mr-1" />
+              {entry.impactLevel}
+            </Badge>
+          )}
           <Badge variant="outline" className={`font-mono ${getStatusColor(entry.status)}`}>
             {entry.status}
           </Badge>
@@ -269,6 +306,60 @@ function FrictionEntryCard({
               </div>
             )}
           </div>
+
+          {/* Impact Description */}
+          {entry.impactDescription && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-orange-500/10 border border-orange-500/30">
+              <Zap className="h-4 w-4 text-orange-500 mt-0.5" />
+              <div>
+                <h4 className="font-mono text-xs font-semibold text-orange-500 mb-1">
+                  Developer Impact
+                </h4>
+                <p className="font-mono text-sm text-foreground">{entry.impactDescription}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Suggested Fix */}
+          {entry.suggestedFix && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+              <Lightbulb className="h-4 w-4 text-green-500 mt-0.5" />
+              <div>
+                <h4 className="font-mono text-xs font-semibold text-green-500 mb-1">
+                  Suggested Fix
+                </h4>
+                <p className="font-mono text-sm text-foreground">{entry.suggestedFix}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Links (LangSmith Trace & Related Docs) */}
+          {(entry.traceUrl || entry.relatedDocs) && (
+            <div className="flex flex-wrap gap-3">
+              {entry.traceUrl && (
+                <a
+                  href={entry.traceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-500 hover:bg-purple-500/20 transition-colors font-mono text-sm"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  LangSmith Trace
+                </a>
+              )}
+              {entry.relatedDocs && (
+                <a
+                  href={entry.relatedDocs}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-500 hover:bg-blue-500/20 transition-colors font-mono text-sm"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Related Docs
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
@@ -324,6 +415,12 @@ function AddFrictionForm({
     stepsToReproduce: '',
     expectedBehavior: '',
     actualBehavior: '',
+    // New fields for interview demo
+    traceUrl: '',
+    impactLevel: undefined as ImpactLevel | undefined,
+    impactDescription: '',
+    suggestedFix: '',
+    relatedDocs: '',
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -448,6 +545,74 @@ function AddFrictionForm({
                 onChange={(e) => setFormData({ ...formData, actualBehavior: e.target.value })}
                 className="w-full mt-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono text-sm"
                 rows={2}
+              />
+            </div>
+          </div>
+
+          {/* New Fields: Impact & Suggested Fix */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h4 className="font-mono text-sm font-semibold text-muted-foreground mb-3">
+              Impact & Resolution (Optional)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="font-mono text-xs text-muted-foreground">Impact Level</label>
+                <select
+                  value={formData.impactLevel || ''}
+                  onChange={(e) => setFormData({ ...formData, impactLevel: e.target.value as ImpactLevel || undefined })}
+                  className="w-full mt-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono text-sm"
+                >
+                  <option value="">Select impact...</option>
+                  <option value="minimal">Minimal - Minor inconvenience</option>
+                  <option value="moderate">Moderate - Slowed down work</option>
+                  <option value="significant">Significant - Major blocker</option>
+                  <option value="blocking">Blocking - Cannot proceed</option>
+                </select>
+              </div>
+              <div>
+                <label className="font-mono text-xs text-muted-foreground">Impact Description</label>
+                <input
+                  type="text"
+                  value={formData.impactDescription}
+                  onChange={(e) => setFormData({ ...formData, impactDescription: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono text-sm"
+                  placeholder="e.g., Blocked for 20 min"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="font-mono text-xs text-muted-foreground">Suggested Fix</label>
+            <textarea
+              value={formData.suggestedFix}
+              onChange={(e) => setFormData({ ...formData, suggestedFix: e.target.value })}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono text-sm"
+              rows={2}
+              placeholder="Proposed solution or workaround..."
+            />
+          </div>
+
+          {/* Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="font-mono text-xs text-muted-foreground">LangSmith Trace URL</label>
+              <input
+                type="url"
+                value={formData.traceUrl}
+                onChange={(e) => setFormData({ ...formData, traceUrl: e.target.value })}
+                className="w-full mt-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono text-sm"
+                placeholder="https://smith.langchain.com/..."
+              />
+            </div>
+            <div>
+              <label className="font-mono text-xs text-muted-foreground">Related Docs URL</label>
+              <input
+                type="url"
+                value={formData.relatedDocs}
+                onChange={(e) => setFormData({ ...formData, relatedDocs: e.target.value })}
+                className="w-full mt-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono text-sm"
+                placeholder="https://docs.langchain.com/..."
               />
             </div>
           </div>

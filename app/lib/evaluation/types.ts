@@ -53,6 +53,8 @@ export type FrictionCategory =
 
 export type FrictionStatus = 'open' | 'acknowledged' | 'fixed' | 'wont-fix'
 
+export type ImpactLevel = 'minimal' | 'moderate' | 'significant' | 'blocking'
+
 export interface FrictionLogEntry {
   id: string
   title: string
@@ -64,6 +66,13 @@ export interface FrictionLogEntry {
   stepsToReproduce?: string
   expectedBehavior?: string
   actualBehavior?: string
+  // New fields for interview demo
+  traceUrl?: string // LangSmith trace URL
+  runId?: string // LangSmith run ID
+  impactLevel?: ImpactLevel // Developer experience impact
+  impactDescription?: string // e.g., "Blocked for 20 min"
+  suggestedFix?: string // Proposed solution
+  relatedDocs?: string // Link to relevant documentation
   createdAt: string
   updatedAt: string
 }
