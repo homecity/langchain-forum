@@ -72,6 +72,26 @@ Use the context above to provide a helpful answer."""
 # =============================================================================
 
 
+def clean_url(url: str) -> str:
+    """Clean URL by removing markdown prefix and whitespace.
+
+    Args:
+        url: Raw URL string (may have '** ' prefix from embeddings)
+
+    Returns:
+        Clean URL string
+    """
+    if not url:
+        return ""
+    # Remove markdown bold prefix (** ) that may exist in embeddings data
+    cleaned = url.strip()
+    if cleaned.startswith("** "):
+        cleaned = cleaned[3:]
+    elif cleaned.startswith("**"):
+        cleaned = cleaned[2:]
+    return cleaned.strip()
+
+
 def format_context(documents: list[Document]) -> str:
     """Format retrieved documents into context string for LLM.
 
@@ -89,7 +109,7 @@ def format_context(documents: list[Document]) -> str:
         metadata = doc.metadata
         title = metadata.get("title", "Unknown")
         source = metadata.get("source", "unknown")
-        url = metadata.get("url", "")
+        url = clean_url(metadata.get("url", ""))
 
         # Format each document
         context_parts.append(
@@ -120,7 +140,7 @@ def format_sources(documents: list[Document]) -> list[Source]:
             Source(
                 id=metadata.get("id", metadata.get("topic_id", "unknown")),
                 title=metadata.get("title", "Unknown"),
-                url=metadata.get("url", ""),
+                url=clean_url(metadata.get("url", "")),
                 relevanceScore=min(max(score, 0.0), 1.0),  # Clamp to [0, 1]
                 snippet=doc.page_content[:150] + "..."
                 if len(doc.page_content) > 150

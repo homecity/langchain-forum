@@ -20,9 +20,19 @@ import {
 import { mockRAGMetrics, formatLatency, formatRelevanceScore } from "@/lib/analytics/rag-metrics"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, TrendingUp, Clock, CheckCircle2, Zap, Target, Database } from "lucide-react"
+import { BarChart3, TrendingUp, Clock, CheckCircle2, Zap, Target, Database, ChevronRight } from "lucide-react"
+import { ActivityDetailModal, ExtendedActivityItem } from "@/components/dashboard/activity-detail-modal"
 
 export default function DashboardPage() {
+  // Activity modal state
+  const [selectedActivity, setSelectedActivity] = React.useState<ExtendedActivityItem | null>(null)
+  const [isModalOpen, setIsModalOpen] = React.useState(false)
+
+  const handleActivityClick = (activity: ExtendedActivityItem) => {
+    setSelectedActivity(activity)
+    setIsModalOpen(true)
+  }
+
   return (
     <div className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-grid-pattern opacity-5 dark:opacity-10"></div>
@@ -290,15 +300,16 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle className="font-mono text-xl">Recent Activity</CardTitle>
                 <p className="font-mono text-sm text-muted-foreground">
-                  Latest forum updates and resolutions
+                  Latest forum updates and resolutions - Click to view details & RAG recommendations
                 </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {mockRecentActivity.map((activity, index) => (
-                    <div
+                    <button
                       key={activity.id}
-                      className="group flex items-start gap-4 rounded-lg border border-langchain-purple/10 bg-gradient-to-r from-white to-langchain-purple/5 p-4 transition-all hover:border-langchain-purple/30 hover:shadow-md dark:from-gray-900 dark:to-langchain-purple/10"
+                      onClick={() => handleActivityClick(activity as ExtendedActivityItem)}
+                      className="w-full text-left group flex items-start gap-4 rounded-lg border border-langchain-purple/10 bg-gradient-to-r from-white to-langchain-purple/5 p-4 transition-all hover:border-langchain-purple/30 hover:shadow-md dark:from-gray-900 dark:to-langchain-purple/10 cursor-pointer"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       {/* Icon */}
@@ -317,8 +328,8 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Content */}
-                      <div className="flex-1">
-                        <h4 className="font-mono font-semibold text-foreground group-hover:text-langchain-purple">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-mono font-semibold text-foreground group-hover:text-langchain-purple truncate">
                           {activity.title}
                         </h4>
                         <p className="mt-1 font-mono text-sm text-muted-foreground">
@@ -326,26 +337,39 @@ export default function DashboardPage() {
                         </p>
                       </div>
 
-                      {/* Badge */}
-                      <Badge
-                        variant={
-                          activity.type === "issue_resolved" ? "default" : "secondary"
-                        }
-                        className={
-                          activity.type === "issue_resolved"
-                            ? "bg-langchain-teal text-white"
-                            : ""
-                        }
-                      >
-                        {activity.type.replace("_", " ")}
-                      </Badge>
-                    </div>
+                      {/* Badge and Arrow */}
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            activity.type === "issue_resolved" ? "default" : "secondary"
+                          }
+                          className={
+                            activity.type === "issue_resolved"
+                              ? "bg-langchain-teal text-white"
+                              : ""
+                          }
+                        >
+                          {activity.type.replace("_", " ")}
+                        </Badge>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-langchain-purple transition-colors" />
+                      </div>
+                    </button>
                   ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Activity Detail Modal */}
+        <ActivityDetailModal
+          activity={selectedActivity}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false)
+            setSelectedActivity(null)
+          }}
+        />
       </div>
     </div>
   )

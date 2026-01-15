@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangChain RAG System - Interactive Manual</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-purple: #a855f7;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-orange: #f97316;
+            --border-color: #30363d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-purple);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        .nav-section {
+            margin-bottom: 15px;
+        }
+
+        .nav-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--bg-tertiary);
+            color: var(--accent-purple);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 40px;
+            max-width: 1200px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--accent-purple);
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: var(--accent-green);
+            margin: 25px 0 15px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+        }
+
+        /* ASCII Art Container */
+        .ascii-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .ascii-art {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            white-space: pre;
+            color: var(--text-primary);
+        }
+
+        .ascii-art .highlight-purple { color: var(--accent-purple); }
+        .ascii-art .highlight-blue { color: var(--accent-blue); }
+        .ascii-art .highlight-green { color: var(--accent-green); }
+        .ascii-art .highlight-yellow { color: var(--accent-yellow); }
+        .ascii-art .highlight-red { color: var(--accent-red); }
+        .ascii-art .highlight-orange { color: var(--accent-orange); }
+
+        /* Collapsible Sections */
+        .collapsible {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-tertiary);
+            transition: background 0.2s;
+        }
+
+        .collapsible-header:hover {
+            background: #2d333b;
+        }
+
+        .collapsible-title {
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .collapsible-arrow {
+            transition: transform 0.3s;
+        }
+
+        .collapsible.open .collapsible-arrow {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible.open .collapsible-content {
+            max-height: 5000px;
+        }
+
+        .collapsible-inner {
+            padding: 20px;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+
+        .code-block .file-path {
+            color: var(--accent-yellow);
+            font-size: 0.75rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--accent-purple);
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-purple { background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); }
+        .badge-blue { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+        .badge-green { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        .badge-red { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-purple);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Flow Step */
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            margin: 15px 0;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .step-file {
+            font-size: 0.8rem;
+            color: var(--accent-yellow);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent-purple);
+            border-bottom-color: var(--accent-purple);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="logo">LangChain RAG Manual</div>
+        <input type="text" class="search-box" id="searchBox" placeholder="Search...">
+
+        <div class="nav-section">
+            <div class="nav-title">Overview</div>
+            <a href="#overview" class="nav-item active">System Architecture</a>
+            <a href="#rag-pipeline" class="nav-item">RAG Pipeline</a>
+            <a href="#tech-stack" class="nav-item">Tech Stack</a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">RAG Deep Dive</div>
+            <a href="#retrieval" class="nav-item">1. Retrieval (FAISS)</a>
+            <a href="#reranking" class="nav-item">2. Reranking</a>
+            <a href="#generation" class="nav-item">3. Generation</a>
+            <a href="#evaluation" class="nav-item">4. Evaluation</a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Frontend</div>
+            <a href="#pages" class="nav-item">Pages</a>
+            <a href="#components" class="nav-item">Components</a>
+            <a href="#api-routes" class="nav-item">API Routes</a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Backend</div>
+            <a href="#chains" class="nav-item">LCEL Chains</a>
+            <a href="#backend-components" class="nav-item">Components</a>
+            <a href="#config" class="nav-item">Configuration</a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Reference</div>
+            <a href="#file-index" class="nav-item">File Index</a>
+            <a href="#data-flow" class="nav-item">Data Flow</a>
+            <a href="#troubleshooting" class="nav-item">Troubleshooting</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Overview Section -->
+        <section id="overview">
+            <h1>LangChain Forum RAG System</h1>
+            <p>Production-ready Retrieval-Augmented Generation system with LangSmith observability</p>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">2,493</div>
+                    <div class="metric-label">Documents Indexed</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">1536</div>
+                    <div class="metric-label">Embedding Dimensions</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">12</div>
+                    <div class="metric-label">Friction Log Entries</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">~2s</div>
+                    <div class="metric-label">Avg Response Time</div>
+                </div>
+            </div>
+
+            <div class="ascii-box">
+                <pre class="ascii-art">
+<span class="highlight-purple">╔══════════════════════════════════════════════════════════════════════════════════╗</span>
+<span class="highlight-purple">║</span>                     <span class="highlight-blue">LANGCHAIN RAG SYSTEM ARCHITECTURE</span>                            <span class="highlight-purple">║</span>
+<span class="highlight-purple">╠══════════════════════════════════════════════════════════════════════════════════╣</span>
+<span class="highlight-purple">║</span>                                                                                  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-green">┌─────────────────────────────────────────────────────────────────────────┐</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-green">│</span>                        <span class="highlight-yellow">NEXT.JS FRONTEND</span> (Port 3000)                   <span class="highlight-green">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-green">│</span>  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐  <span class="highlight-green">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-green">│</span>  │ /chat    │  │/dashboard│  │/evaluation│  │  React 19 + Shadcn  │  <span class="highlight-green">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-green">│</span>  └────┬─────┘  └──────────┘  └─────┬────┘  └──────────────────────┘  <span class="highlight-green">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-green">└───────┼─────────────────────────────┼────────────────────────────────┘</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>           │                             │                                    <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>           │ <span class="highlight-blue">POST /api/chat</span>              │ <span class="highlight-blue">GET /api/evaluation</span>                <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>           ▼                             ▼                                    <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">┌─────────────────────────────────────────────────────────────────────────┐</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>                       <span class="highlight-yellow">PYTHON BACKEND</span> (Port 8000)                       <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>                                                                       <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>   ┌───────────────────────────────────────────────────────────────┐   <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>   │                   <span class="highlight-green">LCEL RAG CHAIN</span>                              │   <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>   │                                                               │   <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>   │  <span class="highlight-blue">Query</span> ──▶ <span class="highlight-purple">FAISS</span> ──▶ <span class="highlight-yellow">CrossEncoder</span> ──▶ <span class="highlight-green">GPT-4o</span> ──▶ <span class="highlight-blue">Response</span>    │   <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>   │         Retrieval     Reranking      Generation               │   <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>   │                                                               │   <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>   └───────────────────────────────────────────────────────────────┘   <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">│</span>                              │                                        <span class="highlight-orange">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-orange">└──────────────────────────────┼────────────────────────────────────────┘</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                                  │ <span class="highlight-red">Tracing</span>                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                                  ▼                                           <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-red">┌─────────────────────────────────────────────────────────────────────────┐</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-red">│</span>                        <span class="highlight-yellow">LANGSMITH</span> (Observability)                        <span class="highlight-red">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-red">│</span>   Traces • Feedback • Evaluation Metrics • Run History                 <span class="highlight-red">│</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-red">└─────────────────────────────────────────────────────────────────────────┘</span>  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                                                                                  <span class="highlight-purple">║</span>
+<span class="highlight-purple">╚══════════════════════════════════════════════════════════════════════════════════╝</span>
+                </pre>
+            </div>
+        </section>
+
+        <!-- RAG Pipeline Section -->
+        <section id="rag-pipeline">
+            <h2>RAG Pipeline Deep Dive</h2>
+
+            <div class="ascii-box">
+                <pre class="ascii-art">
+<span class="highlight-yellow">┌──────────────────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-yellow">│</span>                              <span class="highlight-purple">RAG PIPELINE FLOW</span>                                      <span class="highlight-yellow">│</span>
+<span class="highlight-yellow">└──────────────────────────────────────────────────────────────────────────────────────┘</span>
+
+  <span class="highlight-blue">USER QUERY</span>
+      │
+      ▼
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   <span class="highlight-green">STEP 1</span>        │     │   <span class="highlight-green">STEP 2</span>        │     │   <span class="highlight-green">STEP 3</span>        │
+│   <span class="highlight-purple">RETRIEVAL</span>     │────▶│   <span class="highlight-purple">RERANKING</span>    │────▶│   <span class="highlight-purple">GENERATION</span>   │
+│                 │     │                 │     │                 │
+│  ┌───────────┐  │     │  ┌───────────┐  │     │  ┌───────────┐  │
+│  │   FAISS   │  │     │  │  Cross-   │  │     │  │  GPT-4o   │  │
+│  │  Vector   │  │     │  │  Encoder  │  │     │  │   mini    │  │
+│  │   Store   │  │     │  │  MiniLM   │  │     │  │           │  │
+│  └───────────┘  │     │  └───────────┘  │     │  └───────────┘  │
+│                 │     │                 │     │                 │
+│  <span class="highlight-yellow">k=10 docs</span>      │     │  <span class="highlight-yellow">top_k=5</span>        │     │  <span class="highlight-yellow">temp=0.1</span>      │
+│  <span class="highlight-yellow">cosine sim</span>     │     │  <span class="highlight-yellow">sigmoid norm</span>   │     │  <span class="highlight-yellow">max_tok=1000</span>  │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+      │                       │                       │
+      │ <span class="highlight-red">~0.3s</span>                 │ <span class="highlight-red">~0.2s</span>                 │ <span class="highlight-red">~1.5s</span>
+      ▼                       ▼                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         <span class="highlight-green">STEP 4: EVALUATION</span>                      │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │ Faithfulness │  │  Relevance   │  │  Coherence   │           │
+│  │    Score     │  │    Score     │  │    Score     │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
+│                         <span class="highlight-yellow">(Background async task)</span>                 │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+  <span class="highlight-blue">RESPONSE</span>
+  ├── answer: string
+  ├── sources: Source[]
+  └── trace: Trace
+                </pre>
+            </div>
+
+            <!-- Step 1: Retrieval -->
+            <div class="collapsible open" id="retrieval">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Step 1: Vector Retrieval (FAISS)</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <div class="ascii-box">
+                            <pre class="ascii-art">
+<span class="highlight-green">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-green">│</span>                        <span class="highlight-purple">FAISS RETRIEVAL PROCESS</span>                        <span class="highlight-green">│</span>
+<span class="highlight-green">└────────────────────────────────────────────────────────────────────────┘</span>
+
+     <span class="highlight-blue">Query</span>                        <span class="highlight-yellow">embeddings.json</span>
+       │                              │
+       ▼                              ▼
+  ┌─────────┐                  ┌─────────────┐
+  │ OpenAI  │                  │   2,493     │
+  │Embedding│                  │  Documents  │
+  │ API     │                  │  (116 MB)   │
+  └────┬────┘                  └──────┬──────┘
+       │                              │
+       ▼                              ▼
+  <span class="highlight-purple">[1536-dim vector]</span>            <span class="highlight-purple">[1536-dim × 2493]</span>
+       │                              │
+       └──────────┬───────────────────┘
+                  ▼
+         ┌───────────────┐
+         │  <span class="highlight-green">FAISS Index</span>  │
+         │               │
+         │  L2 Normalize │
+         │       ↓       │
+         │ Inner Product │
+         │  (Cosine Sim) │
+         └───────┬───────┘
+                 │
+                 ▼
+         <span class="highlight-yellow">Top-K Documents</span>
+         (k=10, filtered)
+
+  <span class="highlight-red">Score Conversion:</span>
+  ┌─────────────────────────────────────────┐
+  │  relevance = (faiss_score + 1) / 2      │
+  │                                         │
+  │  FAISS IP: [-1, 1] → Relevance: [0, 1]  │
+  └─────────────────────────────────────────┘
+                            </pre>
+                        </div>
+
+                        <h3>Key Files</h3>
+                        <table>
+                            <tr>
+                                <th>File</th>
+                                <th>Function</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td><code>retriever.py:79-147</code></td>
+                                <td>_get_relevant_documents</td>
+                                <td>Main retrieval logic with score conversion</td>
+                            </tr>
+                            <tr>
+                                <td><code>embedding_loader.py:212-264</code></td>
+                                <td>_create_faiss_index</td>
+                                <td>FAISS index creation with L2 normalization</td>
+                            </tr>
+                            <tr>
+                                <td><code>rag_chain.py:261-279</code></td>
+                                <td>_retrieve_with_timing</td>
+                                <td>Timing wrapper for retrieval step</td>
+                            </tr>
+                        </table>
+
+                        <div class="code-block">
+                            <span class="file-path">backend/app/components/retriever.py:134-144</span>
+<pre># Score conversion: FAISS inner product to relevance score
+for doc, score in results:
+    # FAISS returns inner product score in [-1, 1] for normalized vectors
+    # Convert to [0, 1] range for relevance score
+    relevance_score = (score + 1) / 2
+
+    if relevance_score >= self.score_threshold:
+        doc.metadata["relevance_score"] = relevance_score
+        filtered_docs.append(doc)</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Reranking -->
+            <div class="collapsible" id="reranking">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Step 2: Cross-Encoder Reranking</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <div class="ascii-box">
+                            <pre class="ascii-art">
+<span class="highlight-green">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-green">│</span>                      <span class="highlight-purple">CROSS-ENCODER RERANKING</span>                          <span class="highlight-green">│</span>
+<span class="highlight-green">└────────────────────────────────────────────────────────────────────────┘</span>
+
+   <span class="highlight-blue">Query</span>    +    <span class="highlight-yellow">10 Documents</span>
+     │               │
+     └───────┬───────┘
+             ▼
+    ┌─────────────────┐
+    │  Create Pairs   │
+    │                 │
+    │  [query, doc1]  │
+    │  [query, doc2]  │
+    │      ...        │
+    │  [query, doc10] │
+    └────────┬────────┘
+             │
+             ▼
+    ┌─────────────────────┐
+    │   <span class="highlight-purple">CrossEncoder</span>       │
+    │                     │
+    │   ms-marco-MiniLM   │
+    │      -L-6-v2        │
+    │                     │
+    │   model.predict()   │
+    └──────────┬──────────┘
+               │
+               ▼
+    ┌─────────────────────┐
+    │  <span class="highlight-yellow">Sigmoid Normalize</span>  │
+    │                     │
+    │  score = 1/(1+e^-x) │
+    │                     │
+    │  Raw → [0, 1]       │
+    └──────────┬──────────┘
+               │
+               ▼
+    <span class="highlight-green">Sort by Score (DESC)</span>
+               │
+               ▼
+       <span class="highlight-blue">Top-5 Documents</span>
+                            </pre>
+                        </div>
+
+                        <h3>Key Files</h3>
+                        <table>
+                            <tr>
+                                <th>File</th>
+                                <th>Function</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td><code>reranker.py:92-125</code></td>
+                                <td>_rerank_with_model</td>
+                                <td>Cross-encoder scoring with sigmoid normalization</td>
+                            </tr>
+                            <tr>
+                                <td><code>reranker.py:127-151</code></td>
+                                <td>_rerank_with_fallback</td>
+                                <td>Jaccard similarity fallback</td>
+                            </tr>
+                            <tr>
+                                <td><code>rag_chain.py:281-291</code></td>
+                                <td>_rerank_with_timing</td>
+                                <td>Timing wrapper for reranking step</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Generation -->
+            <div class="collapsible" id="generation">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Step 3: LLM Generation</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <div class="ascii-box">
+                            <pre class="ascii-art">
+<span class="highlight-green">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-green">│</span>                        <span class="highlight-purple">LLM GENERATION</span>                                  <span class="highlight-green">│</span>
+<span class="highlight-green">└────────────────────────────────────────────────────────────────────────┘</span>
+
+     <span class="highlight-blue">Reranked Docs</span>              <span class="highlight-yellow">System Prompt</span>
+          │                          │
+          ▼                          │
+   ┌─────────────┐                   │
+   │   Context   │                   │
+   │  Formatter  │                   │
+   │             │                   │
+   │  [Source 1] │                   │
+   │  Title:...  │                   │
+   │  Content:.. │                   │
+   │             │                   │
+   │  [Source 2] │                   │
+   │  ...        │                   │
+   └──────┬──────┘                   │
+          │                          │
+          └────────────┬─────────────┘
+                       │
+                       ▼
+              ┌──────────────┐
+              │ <span class="highlight-purple">GPT-4o-mini</span>  │
+              │              │
+              │ temp: 0.1    │
+              │ max: 1000    │
+              │              │
+              │ <span class="highlight-green">Streaming</span>    │
+              │ Supported    │
+              └──────┬───────┘
+                     │
+                     ▼
+              <span class="highlight-blue">Generated Answer</span>
+              (Markdown format)
+                            </pre>
+                        </div>
+
+                        <h3>System Prompt Rules</h3>
+                        <div class="code-block">
+<pre>1. Answer based on the provided context
+2. Use related information even if not perfect match
+3. Cite sources by mentioning forum post title or documentation page
+4. Be concise but thorough in explanations
+5. Provide code examples when relevant
+6. Format response using markdown
+7. Only say "I don't have enough information" if context is completely unrelated</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Evaluation -->
+            <div class="collapsible" id="evaluation">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Step 4: LangSmith Evaluation</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <div class="ascii-box">
+                            <pre class="ascii-art">
+<span class="highlight-green">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-green">│</span>                    <span class="highlight-purple">LANGSMITH EVALUATION</span> (Background)                   <span class="highlight-green">│</span>
+<span class="highlight-green">└────────────────────────────────────────────────────────────────────────┘</span>
+
+  <span class="highlight-blue">Query</span> + <span class="highlight-yellow">Context</span> + <span class="highlight-green">Answer</span>
+              │
+              ▼
+   ┌───────────────────────────────────────────────────┐
+   │              <span class="highlight-purple">asyncio.gather()</span>                     │
+   │                                                   │
+   │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+   │  │ <span class="highlight-blue">Faithfulness</span> │  │  <span class="highlight-yellow">Relevance</span>   │  │  <span class="highlight-green">Coherence</span>   │
+   │  │              │  │              │  │              │
+   │  │ Is answer    │  │ Is context   │  │ Is answer    │
+   │  │ grounded in  │  │ relevant to  │  │ well         │
+   │  │ context?     │  │ query?       │  │ structured?  │
+   │  │              │  │              │  │              │
+   │  │ Score: 0-1   │  │ Score: 0-1   │  │ Score: 0-1   │
+   │  └──────────────┘  └──────────────┘  └──────────────┘
+   │                                                   │
+   └───────────────────────────────────────────────────┘
+              │
+              ▼
+   ┌───────────────────────────────────────────────────┐
+   │              <span class="highlight-red">LangSmith Feedback API</span>               │
+   │                                                   │
+   │   client.create_feedback(                         │
+   │       run_id=run_id,                              │
+   │       key=metric_name,                            │
+   │       score=score                                 │
+   │   )                                               │
+   └───────────────────────────────────────────────────┘
+                            </pre>
+                        </div>
+
+                        <h3>Evaluation Metrics</h3>
+                        <table>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Question</th>
+                                <th>Good Score</th>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-blue">Faithfulness</span></td>
+                                <td>Is the answer grounded in the provided context?</td>
+                                <td>&gt; 0.9</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-yellow">Relevance</span></td>
+                                <td>Is the retrieved context relevant to the query?</td>
+                                <td>&gt; 0.8</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-green">Coherence</span></td>
+                                <td>Is the answer well-structured and complete?</td>
+                                <td>&gt; 0.85</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack Section -->
+        <section id="tech-stack">
+            <h2>Technology Stack</h2>
+
+            <div class="tabs">
+                <div class="tab active" onclick="showTab(event, 'frontend-tab')">Frontend</div>
+                <div class="tab" onclick="showTab(event, 'backend-tab')">Backend</div>
+                <div class="tab" onclick="showTab(event, 'infra-tab')">Infrastructure</div>
+            </div>
+
+            <div id="frontend-tab" class="tab-content active">
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Technology</th>
+                        <th>Version</th>
+                    </tr>
+                    <tr><td>Framework</td><td>Next.js</td><td>15.5.9</td></tr>
+                    <tr><td>UI Library</td><td>React</td><td>19.0</td></tr>
+                    <tr><td>Component Library</td><td>Shadcn UI</td><td>latest</td></tr>
+                    <tr><td>Styling</td><td>Tailwind CSS</td><td>3.4</td></tr>
+                    <tr><td>Charts</td><td>Recharts</td><td>2.x</td></tr>
+                    <tr><td>LangChain</td><td>@langchain/core</td><td>0.3.x</td></tr>
+                    <tr><td>Testing</td><td>Playwright + Vitest</td><td>latest</td></tr>
+                </table>
+            </div>
+
+            <div id="backend-tab" class="tab-content">
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Technology</th>
+                        <th>Version</th>
+                    </tr>
+                    <tr><td>Framework</td><td>FastAPI</td><td>0.110+</td></tr>
+                    <tr><td>LangChain</td><td>langchain + langchain-openai</td><td>0.3.x</td></tr>
+                    <tr><td>Vector Store</td><td>FAISS</td><td>1.7.4</td></tr>
+                    <tr><td>Reranker</td><td>sentence-transformers</td><td>2.2.0</td></tr>
+                    <tr><td>LLM</td><td>OpenAI GPT-4o-mini</td><td>-</td></tr>
+                    <tr><td>Embeddings</td><td>text-embedding-3-small</td><td>1536 dim</td></tr>
+                    <tr><td>Tracing</td><td>LangSmith</td><td>0.0.80+</td></tr>
+                </table>
+            </div>
+
+            <div id="infra-tab" class="tab-content">
+                <table>
+                    <tr>
+                        <th>Component</th>
+                        <th>Port</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr><td>Next.js Frontend</td><td>3000</td><td>UI and API proxy</td></tr>
+                    <tr><td>Python Backend</td><td>8000</td><td>RAG chain execution</td></tr>
+                    <tr><td>LangSmith</td><td>External</td><td>Observability dashboard</td></tr>
+                </table>
+            </div>
+        </section>
+
+        <!-- Pages Section -->
+        <section id="pages">
+            <h2>Frontend Pages</h2>
+
+            <div class="ascii-box">
+                <pre class="ascii-art">
+<span class="highlight-purple">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-purple">│</span>                         <span class="highlight-blue">PAGE STRUCTURE</span>                                 <span class="highlight-purple">│</span>
+<span class="highlight-purple">└────────────────────────────────────────────────────────────────────────┘</span>
+
+  <span class="highlight-yellow">/</span> (Home)
+   │
+   ├── <span class="highlight-green">/dashboard</span>     ─── Analytics & Metrics Dashboard
+   │                    ├── Category Distribution Chart
+   │                    ├── Latency Metrics
+   │                    ├── Token Usage
+   │                    └── RAG Performance
+   │
+   ├── <span class="highlight-green">/chat</span>          ─── RAG Chat Interface
+   │                    ├── Message Input
+   │                    ├── Streaming Response
+   │                    ├── Source Display
+   │                    └── Typing Indicator
+   │
+   └── <span class="highlight-green">/evaluation</span>    ─── LangSmith Evaluation
+                        ├── RAG Metrics Live
+                        ├── LangSmith Results
+                        └── Friction Log
+                </pre>
+            </div>
+        </section>
+
+        <!-- Components Section -->
+        <section id="components">
+            <h2>Component Library</h2>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Chat Components (3 files)</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <table>
+                            <tr>
+                                <th>Component</th>
+                                <th>File</th>
+                                <th>Purpose</th>
+                            </tr>
+                            <tr>
+                                <td>ChatInput</td>
+                                <td>chat/chat-input.tsx</td>
+                                <td>Message input form with submit handling</td>
+                            </tr>
+                            <tr>
+                                <td>ChatMessage</td>
+                                <td>chat/chat-message.tsx</td>
+                                <td>Individual message display with sources</td>
+                            </tr>
+                            <tr>
+                                <td>TypingIndicator</td>
+                                <td>chat/typing-indicator.tsx</td>
+                                <td>Animated loading indicator</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Analytics Components (8 files)</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <table>
+                            <tr>
+                                <th>Component</th>
+                                <th>Chart Type</th>
+                            </tr>
+                            <tr><td>MetricCard</td><td>Single metric display</td></tr>
+                            <tr><td>LatencyChart</td><td>Line chart</td></tr>
+                            <tr><td>RelevanceChart</td><td>Bar chart</td></tr>
+                            <tr><td>TokenUsageChart</td><td>Area chart</td></tr>
+                            <tr><td>SourceDistributionChart</td><td>Pie chart</td></tr>
+                            <tr><td>IssueVolumeChart</td><td>Line chart</td></tr>
+                            <tr><td>TagResolutionChart</td><td>Bar chart</td></tr>
+                            <tr><td>CategoryChart</td><td>Pie chart</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Evaluation Components (3 files)</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <table>
+                            <tr>
+                                <th>Component</th>
+                                <th>File</th>
+                                <th>Purpose</th>
+                            </tr>
+                            <tr>
+                                <td>RAGMetricsLive</td>
+                                <td>evaluation/rag-metrics-live.tsx</td>
+                                <td>Real-time RAG metrics display</td>
+                            </tr>
+                            <tr>
+                                <td>LangSmithResults</td>
+                                <td>evaluation/langsmith-results.tsx</td>
+                                <td>LangSmith trace viewer</td>
+                            </tr>
+                            <tr>
+                                <td>FrictionLog</td>
+                                <td>evaluation/friction-log.tsx</td>
+                                <td>Friction point logging with export</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Backend Components Section -->
+        <section id="backend-components">
+            <h2>Backend Components</h2>
+
+            <div class="ascii-box">
+                <pre class="ascii-art">
+<span class="highlight-purple">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-purple">│</span>                       <span class="highlight-blue">BACKEND ARCHITECTURE</span>                            <span class="highlight-purple">│</span>
+<span class="highlight-purple">└────────────────────────────────────────────────────────────────────────┘</span>
+
+  backend/
+  ├── app/
+  │   ├── <span class="highlight-yellow">main.py</span>              ─── FastAPI entry point
+  │   ├── <span class="highlight-yellow">config.py</span>            ─── Pydantic Settings
+  │   │
+  │   ├── <span class="highlight-green">chains/</span>
+  │   │   └── rag_chain.py     ─── LCEL RAG pipeline
+  │   │
+  │   ├── <span class="highlight-green">components/</span>
+  │   │   ├── retriever.py     ─── VectorRetriever (FAISS)
+  │   │   ├── reranker.py      ─── CrossEncoderReranker
+  │   │   └── evaluator.py     ─── RAGEvaluator
+  │   │
+  │   ├── <span class="highlight-green">loaders/</span>
+  │   │   └── embedding_loader.py ─── FAISS index loader
+  │   │
+  │   ├── <span class="highlight-green">models/</span>
+  │   │   └── schemas.py       ─── Pydantic request/response
+  │   │
+  │   └── <span class="highlight-green">routes/</span>
+  │       ├── chat.py          ─── /api/chat endpoint
+  │       └── evaluation.py    ─── /api/evaluation endpoint
+  │
+  └── data/
+      └── embeddings.json      ─── Pre-computed vectors (116MB)
+                </pre>
+            </div>
+        </section>
+
+        <!-- LCEL Chains Section -->
+        <section id="chains">
+            <h2>LCEL Chain Architecture</h2>
+
+            <div class="ascii-box">
+                <pre class="ascii-art">
+<span class="highlight-purple">╔══════════════════════════════════════════════════════════════════════════════════╗</span>
+<span class="highlight-purple">║</span>                      <span class="highlight-blue">LCEL CHAIN COMPOSITION</span>                                     <span class="highlight-purple">║</span>
+<span class="highlight-purple">╠══════════════════════════════════════════════════════════════════════════════════╣</span>
+<span class="highlight-purple">║</span>                                                                                  <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   <span class="highlight-yellow">Input: {"query": str, "filter": Optional[MetadataFilter]}</span>                    <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              │                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              ▼                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   ┌───────────────────────────────────────────────────────────────────────────┐ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-green">RunnablePassthrough.assign</span>(documents=_retrieve_with_timing)              │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │                                                                           │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-blue">→ Adds: {"documents": [Document, ...], "_retrieval_duration": float}</span>    │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   └───────────────────────────────────────────────────────────────────────────┘ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              │                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              ▼                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   ┌───────────────────────────────────────────────────────────────────────────┐ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-green">RunnablePassthrough.assign</span>(reranked_docs=_rerank_with_timing)            │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │                                                                           │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-blue">→ Adds: {"reranked_docs": [Document, ...], "_reranking_duration": float}</span>│ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   └───────────────────────────────────────────────────────────────────────────┘ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              │                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              ▼                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   ┌───────────────────────────────────────────────────────────────────────────┐ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-green">RunnablePassthrough.assign</span>(context=format_context, sources=format_sources)│<span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │                                                                           │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-blue">→ Adds: {"context": str, "sources": [Source, ...]}</span>                      │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   └───────────────────────────────────────────────────────────────────────────┘ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              │                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              ▼                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   ┌───────────────────────────────────────────────────────────────────────────┐ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-green">RunnablePassthrough.assign</span>(answer=_generate_answer_with_timing)          │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │                                                                           │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-blue">→ Adds: {"answer": str, "_generation_duration": float}</span>                  │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   └───────────────────────────────────────────────────────────────────────────┘ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              │                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                              ▼                                                   <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   ┌───────────────────────────────────────────────────────────────────────────┐ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-green">RunnableParallel</span>(answer=λx.x["answer"],                                  │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │                   sources=λx.x["sources"],                                │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │                   trace=_get_trace)                                       │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │                                                                           │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   │  <span class="highlight-blue">→ Output: {"answer": str, "sources": [...], "trace": Trace}</span>             │ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>   └───────────────────────────────────────────────────────────────────────────┘ <span class="highlight-purple">║</span>
+<span class="highlight-purple">║</span>                                                                                  <span class="highlight-purple">║</span>
+<span class="highlight-purple">╚══════════════════════════════════════════════════════════════════════════════════╝</span>
+                </pre>
+            </div>
+
+            <div class="code-block">
+                <span class="file-path">backend/app/chains/rag_chain.py:233-258</span>
+<pre>chain = (
+    # Step 1: Retrieve documents
+    RunnablePassthrough.assign(
+        documents=self._retrieve_with_timing,
+    )
+    # Step 2: Rerank documents
+    | RunnablePassthrough.assign(
+        reranked_docs=self._rerank_with_timing,
+    )
+    # Step 3: Format context and sources
+    | RunnablePassthrough.assign(
+        context=lambda x: format_context(x["reranked_docs"]),
+        sources=lambda x: format_sources(x["reranked_docs"]),
+    )
+    # Step 4: Generate answer
+    | RunnablePassthrough.assign(
+        answer=RunnableLambda(self._generate_answer_with_timing),
+    )
+    # Step 5: Compute trace
+    | RunnableParallel(
+        answer=RunnableLambda(lambda x: x["answer"]),
+        sources=RunnableLambda(lambda x: x["sources"]),
+        trace=RunnableLambda(lambda x: self._get_trace(x)),
+    )
+)</pre>
+            </div>
+        </section>
+
+        <!-- Configuration Section -->
+        <section id="config">
+            <h2>Configuration</h2>
+
+            <h3>Environment Variables</h3>
+            <table>
+                <tr>
+                    <th>Variable</th>
+                    <th>Required</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>OPENAI_API_KEY</code></td>
+                    <td><span class="badge badge-red">Required</span></td>
+                    <td>OpenAI API key for embeddings and LLM</td>
+                </tr>
+                <tr>
+                    <td><code>LANGSMITH_API_KEY</code></td>
+                    <td><span class="badge badge-yellow">Optional</span></td>
+                    <td>LangSmith API key for tracing</td>
+                </tr>
+                <tr>
+                    <td><code>LANGCHAIN_TRACING_V2</code></td>
+                    <td><span class="badge badge-yellow">Optional</span></td>
+                    <td>Enable LangSmith tracing (true/false)</td>
+                </tr>
+                <tr>
+                    <td><code>LANGCHAIN_PROJECT</code></td>
+                    <td><span class="badge badge-yellow">Optional</span></td>
+                    <td>LangSmith project name</td>
+                </tr>
+                <tr>
+                    <td><code>USE_MOCK_CHAT</code></td>
+                    <td><span class="badge badge-green">Dev</span></td>
+                    <td>Use mock responses for development</td>
+                </tr>
+            </table>
+
+            <h3>Protected Settings (Do Not Modify)</h3>
+            <table>
+                <tr>
+                    <th>Setting</th>
+                    <th>Value</th>
+                    <th>Reason</th>
+                </tr>
+                <tr>
+                    <td><code>embedding_dimensions</code></td>
+                    <td>1536</td>
+                    <td>Changing breaks all existing vectors</td>
+                </tr>
+                <tr>
+                    <td><code>embedding_model</code></td>
+                    <td>text-embedding-3-small</td>
+                    <td>Must match pre-computed embeddings</td>
+                </tr>
+                <tr>
+                    <td><code>FAISS index type</code></td>
+                    <td>IndexFlatIP</td>
+                    <td>Inner product for cosine similarity</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- File Index Section -->
+        <section id="file-index">
+            <h2>Complete File Index</h2>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Frontend Files (27 files)</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <table>
+                            <tr><th>Path</th><th>Purpose</th></tr>
+                            <tr><td>app/app/page.tsx</td><td>Home page (redirects to dashboard)</td></tr>
+                            <tr><td>app/app/dashboard/page.tsx</td><td>Analytics dashboard</td></tr>
+                            <tr><td>app/app/chat/page.tsx</td><td>RAG chat interface</td></tr>
+                            <tr><td>app/app/evaluation/page.tsx</td><td>Evaluation metrics</td></tr>
+                            <tr><td>app/app/api/chat/route.ts</td><td>Chat API endpoint</td></tr>
+                            <tr><td>app/app/api/evaluation/route.ts</td><td>Evaluation API endpoint</td></tr>
+                            <tr><td>app/components/chat/*.tsx</td><td>Chat UI components (3)</td></tr>
+                            <tr><td>app/components/analytics/*.tsx</td><td>Chart components (8)</td></tr>
+                            <tr><td>app/components/evaluation/*.tsx</td><td>Evaluation components (3)</td></tr>
+                            <tr><td>app/components/ui/*.tsx</td><td>Shadcn base components (10)</td></tr>
+                            <tr><td>app/lib/evaluation/*.ts</td><td>Evaluation utilities (4)</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Backend Files (12 files)</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <table>
+                            <tr><th>Path</th><th>Purpose</th></tr>
+                            <tr><td>backend/app/main.py</td><td>FastAPI entry point</td></tr>
+                            <tr><td>backend/app/config.py</td><td>Settings management</td></tr>
+                            <tr><td>backend/app/chains/rag_chain.py</td><td>LCEL RAG pipeline</td></tr>
+                            <tr><td>backend/app/components/retriever.py</td><td>FAISS retriever</td></tr>
+                            <tr><td>backend/app/components/reranker.py</td><td>Cross-encoder reranker</td></tr>
+                            <tr><td>backend/app/components/evaluator.py</td><td>RAG evaluator</td></tr>
+                            <tr><td>backend/app/loaders/embedding_loader.py</td><td>FAISS index loader</td></tr>
+                            <tr><td>backend/app/models/schemas.py</td><td>Pydantic schemas</td></tr>
+                            <tr><td>backend/app/routes/chat.py</td><td>Chat endpoints</td></tr>
+                            <tr><td>backend/app/routes/evaluation.py</td><td>Evaluation endpoint</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Flow Section -->
+        <section id="data-flow">
+            <h2>Complete Data Flow</h2>
+
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">User Query Input</div>
+                    <div class="step-file">app/app/chat/page.tsx:25-61</div>
+                    <p>User types query → handleSendMessage() → POST /api/chat</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">API Route Proxy</div>
+                    <div class="step-file">app/app/api/chat/route.ts:72-98</div>
+                    <p>Next.js API route → Proxy to Python backend (port 8000)</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">FastAPI Routing</div>
+                    <div class="step-file">backend/app/routes/chat.py:161-226</div>
+                    <p>POST /api/chat → Get RAG chain → Execute ainvoke()</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">LCEL Chain Execution</div>
+                    <div class="step-file">backend/app/chains/rag_chain.py:379-392</div>
+                    <p>@traceable decorator → LCEL chain.ainvoke() → Capture run_id</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <div class="step-title">Vector Retrieval</div>
+                    <div class="step-file">backend/app/components/retriever.py:79-147</div>
+                    <p>Query → FAISS similarity_search → Score conversion → Top-K docs</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <div class="step-title">Cross-Encoder Reranking</div>
+                    <div class="step-file">backend/app/components/reranker.py:153-206</div>
+                    <p>Query + Docs → Create pairs → model.predict() → Sigmoid → Sort</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">7</div>
+                <div class="step-content">
+                    <div class="step-title">LLM Generation</div>
+                    <div class="step-file">backend/app/chains/rag_chain.py:293-314</div>
+                    <p>Context + Query → ChatPromptTemplate → GPT-4o-mini → Answer</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">8</div>
+                <div class="step-content">
+                    <div class="step-title">Background Evaluation</div>
+                    <div class="step-file">backend/app/components/evaluator.py:161-221</div>
+                    <p>asyncio.create_task → Parallel metrics → LangSmith feedback</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">9</div>
+                <div class="step-content">
+                    <div class="step-title">Response to Frontend</div>
+                    <div class="step-file">app/app/chat/page.tsx:139-155</div>
+                    <p>JSON response → Update message state → Render with sources</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Troubleshooting Section -->
+        <section id="troubleshooting">
+            <h2>Troubleshooting Guide</h2>
+
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <span class="collapsible-title">Common Issues</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <h3>Low Relevance Scores</h3>
+                        <p><strong>Symptom:</strong> All retrieved documents have low scores (&lt; 0.5)</p>
+                        <p><strong>Check:</strong></p>
+                        <ul>
+                            <li>Verify FAISS index is using L2 normalized vectors</li>
+                            <li>Check score conversion formula: (score + 1) / 2</li>
+                            <li>Ensure query embeddings use same model as documents</li>
+                        </ul>
+
+                        <h3>Streaming Not Working</h3>
+                        <p><strong>Symptom:</strong> Response arrives all at once instead of streaming</p>
+                        <p><strong>Check:</strong></p>
+                        <ul>
+                            <li>Verify using astream_events() not just astream()</li>
+                            <li>Check SSE headers: Content-Type: text/event-stream</li>
+                            <li>Disable response buffering: X-Accel-Buffering: no</li>
+                        </ul>
+
+                        <h3>LangSmith Traces Not Appearing</h3>
+                        <p><strong>Symptom:</strong> No traces in LangSmith dashboard</p>
+                        <p><strong>Check:</strong></p>
+                        <ul>
+                            <li>LANGCHAIN_TRACING_V2=true is set</li>
+                            <li>LANGSMITH_API_KEY is valid</li>
+                            <li>@traceable decorator is applied to chain methods</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="margin-top: 60px; padding: 20px; text-align: center; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
+            <p>Generated for LangChain RAG Interview Demo</p>
+            <p style="font-size: 0.8rem; margin-top: 10px;">
+                <span class="badge badge-purple">Next.js 15</span>
+                <span class="badge badge-blue">FastAPI</span>
+                <span class="badge badge-green">LangChain</span>
+                <span class="badge badge-yellow">FAISS</span>
+                <span class="badge badge-red">LangSmith</span>
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        // Collapsible functionality
+        function toggleCollapsible(header) {
+            const collapsible = header.parentElement;
+            collapsible.classList.toggle('open');
+        }
+
+        // Tab functionality
+        function showTab(event, tabId) {
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Add active to clicked tab
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Search functionality
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const sections = document.querySelectorAll('section');
+
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (query === '' || text.includes(query)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+
+                // Update active state
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Highlight current section in navigation
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (window.scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === '#' + current) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

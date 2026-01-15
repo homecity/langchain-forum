@@ -58,6 +58,9 @@ export interface ActivityItem {
   title: string
   timestamp: string
   user: string
+  url: string
+  content?: string
+  tags?: string[]
 }
 
 export interface ChatMessage {
@@ -171,6 +174,10 @@ export const recentActivity: ActivityItem[] = forumStats.recentActivity.map((ite
   title: item.title,
   timestamp: item.date,
   user: 'forum-user', // Generic user since we don't have this data
+  url: item.url,
+  // Content will be loaded from embeddings or displayed as summary
+  content: `This forum post discusses: ${item.title}\n\nStatus: ${item.status === 'SOLVED' ? 'Resolved' : 'Open'}\nPosted: ${item.date}\n\nClick "Open in Forum" to view the full discussion and any replies.`,
+  tags: [item.status === 'SOLVED' ? 'resolved' : 'open'],
 }))
 
 // Chat Messages (welcome message only - actual chat will use API)
