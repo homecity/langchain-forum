@@ -126,14 +126,16 @@ class VectorRetriever(BaseRetriever):
             filter=metadata_filter,
         )
 
-        # For FAISS with Inner Product (IP) and normalized vectors:
-        # - Higher scores = more similar (range approximately 0 to 1)
-        # - Score is already a similarity score, not a distance
+        # For FAISS with Inner Product (IP) and L2-normalized vectors:
+        # - Returns cosine similarity in range [-1, 1]
+        # - Higher scores = more similar
+        # - Must convert to [0, 1] range using formula: (score + 1) / 2
         filtered_docs = []
         for doc, score in docs_and_scores:
-            # Score from FAISS IP is already similarity (higher = better)
-            # Normalize to [0, 1] range (IP scores can sometimes exceed 1 slightly)
-            similarity_score = max(0.0, min(1.0, score))
+            # Convert cosine similarity from [-1, 1] to [0, 1] range
+            similarity_score = (score + 1) / 2
+            # Clamp to [0, 1] to handle any floating point edge cases
+            similarity_score = max(0.0, min(1.0, similarity_score))
 
             # Apply score threshold filter
             if similarity_score >= self.score_threshold:

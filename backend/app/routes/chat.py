@@ -16,6 +16,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from langsmith import Client as LangSmithClient
 from pydantic import BaseModel
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import get_settings
 from app.chains.rag_chain import get_rag_chain
@@ -38,43 +39,32 @@ def get_evaluator() -> RAGEvaluator:
     return _evaluator
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+)
 async def submit_langsmith_feedback(
+    run_id: str,
     query: str,
     context: str,
     answer: str,
-    project_name: str,
     langsmith_api_key: str,
 ) -> None:
     """
     Compute evaluation metrics and submit as LangSmith feedback.
 
     This runs asynchronously in the background after the response is sent.
+
+    Args:
+        run_id: LangSmith run ID (captured directly from trace context)
+        query: User query
+        context: Retrieved context
+        answer: Generated answer
+        langsmith_api_key: LangSmith API key
     """
     try:
         # Initialize LangSmith client
         client = LangSmithClient(api_key=langsmith_api_key)
-
-        # Find the most recent RAG Query run with this query
-        runs = list(client.list_runs(
-            project_name=project_name,
-            is_root=True,
-            limit=20,  # Fetch more to find RAG Query runs
-        ))
-
-        # Filter for RAG Query runs and find matching query
-        target_run = None
-        for run in runs:
-            if run.name != "RAG Query":
-                continue
-            if run.inputs and isinstance(run.inputs, dict):
-                run_query = run.inputs.get("query", "")
-                if query[:50] in str(run_query)[:50]:  # Fuzzy match
-                    target_run = run
-                    break
-
-        if not target_run:
-            logger.warning(f"Could not find LangSmith run for query: {query[:50]}...")
-            return
 
         # Compute evaluation scores
         evaluator = get_evaluator()
@@ -84,13 +74,13 @@ async def submit_langsmith_feedback(
         for metric, score in scores.items():
             if metric != "overall":  # Skip overall, it's derived
                 client.create_feedback(
-                    run_id=target_run.id,
+                    run_id=run_id,
                     key=metric,
                     score=score,
                     comment=f"Auto-evaluated {metric} score",
                 )
 
-        logger.info(f"Submitted LangSmith feedback: {scores}")
+        logger.info(f"Submitted LangSmith feedback for run {run_id}: {scores}")
 
     except Exception as e:
         logger.error(f"Failed to submit LangSmith feedback: {e}")
@@ -210,13 +200,13 @@ async def chat(request: ChatRequest):
 
         # Submit evaluation feedback to LangSmith in background
         # (non-blocking - response is sent immediately)
-        if settings.langsmith_api_key and settings.langchain_tracing_v2:
+        if result.get("run_id") and settings.langsmith_api_key and settings.langchain_tracing_v2:
             asyncio.create_task(
                 submit_langsmith_feedback(
+                    run_id=result["run_id"],
                     query=request.query,
                     context=context,
                     answer=result["answer"],
-                    project_name=settings.langchain_project,
                     langsmith_api_key=settings.langsmith_api_key,
                 )
             )
@@ -243,22 +233,23 @@ async def chat(request: ChatRequest):
 @router.post("/chat/stream")
 async def chat_stream(request: ChatRequest):
     """
-    Streaming RAG Chat endpoint.
+    Streaming RAG Chat endpoint with TRUE token-level streaming.
 
     Uses Server-Sent Events (SSE) to stream the response.
-    LangServe native streaming format.
+    Uses astream_events() for real token-by-token LLM streaming.
     """
     settings = get_settings()
 
     async def generate() -> AsyncGenerator[str, None]:
         """Generate SSE events."""
+        import json
+
         try:
             if settings.use_mock_chat:
                 # Mock streaming
                 await asyncio.sleep(0.5)
 
                 # Send sources first
-                import json  # noqa: Local import for streaming
                 sources_data = [s.model_dump() for s in MOCK_RESPONSE.sources]
                 yield f"data: {json.dumps({'type': 'sources', 'sources': sources_data})}\n\n"
 
@@ -270,30 +261,50 @@ async def chat_stream(request: ChatRequest):
                 yield "data: [DONE]\n\n"
                 return
 
-            # Real streaming
+            # Real streaming using astream_events() for token-level streaming
             chain = get_rag_chain()
-            import json
+            inputs = {"query": request.query}
+            if request.filter:
+                inputs["filter"] = request.filter
 
-            # First, get sources (need to retrieve first)
-            result = await chain.ainvoke(
-                query=request.query,
-                filter=request.filter,
-            )
+            sources_sent = False
+            trace_sent = False
 
-            # Send sources
-            sources_data = [s.model_dump() for s in result["sources"]]
-            yield f"data: {json.dumps({'type': 'sources', 'sources': sources_data})}\n\n"
+            # Use astream_events() to get fine-grained events including LLM tokens
+            async for event in chain._chain.astream_events(inputs, version="v2"):
+                event_type = event.get("event")
 
-            # Stream the answer
-            for word in result["answer"].split():
-                yield f"data: {json.dumps({'type': 'chunk', 'content': word + ' '})}\n\n"
+                # Send sources when they're available (after retrieval + reranking)
+                if not sources_sent and event_type == "on_chain_end":
+                    data = event.get("data", {})
+                    output = data.get("output", {})
+
+                    if "sources" in output and output["sources"]:
+                        sources_data = [s.model_dump() for s in output["sources"]]
+                        yield f"data: {json.dumps({'type': 'sources', 'sources': sources_data})}\n\n"
+                        sources_sent = True
+
+                # Stream LLM tokens as they arrive (TRUE streaming)
+                if event_type == "on_chat_model_stream":
+                    chunk = event.get("data", {}).get("chunk")
+                    if chunk and hasattr(chunk, "content") and chunk.content:
+                        yield f"data: {json.dumps({'type': 'chunk', 'content': chunk.content})}\n\n"
+
+                # Send trace at the end
+                if not trace_sent and event_type == "on_chain_end":
+                    data = event.get("data", {})
+                    output = data.get("output", {})
+
+                    if "trace" in output:
+                        trace_data = output["trace"].model_dump()
+                        yield f"data: {json.dumps({'type': 'trace', 'trace': trace_data})}\n\n"
+                        trace_sent = True
 
             # Send done signal
             yield "data: [DONE]\n\n"
 
         except Exception as e:
             logger.error(f"Stream error: {str(e)}", exc_info=True)
-            import json
             yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
 
     return StreamingResponse(

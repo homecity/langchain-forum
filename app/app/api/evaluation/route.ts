@@ -17,18 +17,33 @@ const USE_TYPESCRIPT_BACKEND = process.env.USE_TYPESCRIPT_BACKEND === 'true'
 async function proxyToPythonBackend(type: string, limit: number): Promise<Response> {
   const url = `${PYTHON_BACKEND_URL}/api/evaluation?type=${type}&limit=${limit}`
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+  // Setup timeout controller
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
-  if (!response.ok) {
-    throw new Error(`Python backend error: ${response.status}`)
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new Error(`Python backend error: ${response.status}`)
+    }
+
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if ((error as Error).name === 'AbortError') {
+      throw new Error('Request timeout: Python backend did not respond within 30 seconds')
+    }
+    throw error
   }
-
-  return response
 }
 
 export async function GET(request: NextRequest) {

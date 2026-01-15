@@ -16,6 +16,7 @@ from functools import lru_cache
 from typing import Any, Optional
 
 from langsmith import traceable
+from langsmith.run_helpers import get_current_run_tree
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -26,6 +27,14 @@ from langchain_core.runnables import (
     RunnablePassthrough,
 )
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
+import openai
+import httpx
 
 from app.config import get_settings
 from app.loaders.embedding_loader import get_embedding_loader
@@ -197,9 +206,6 @@ class RAGChain:
         # Build the chain
         self._chain = self._build_chain()
 
-        # Timing state (for trace)
-        self._timing: dict[str, float] = {}
-
     def _build_chain(self) -> Runnable:
         """
         Build the LCEL chain.
@@ -240,18 +246,13 @@ class RAGChain:
             )
             # Step 4: Generate answer (must complete before trace)
             | RunnablePassthrough.assign(
-                answer=(
-                    RunnableLambda(lambda x: {"query": x["query"], "context": x["context"]})
-                    | prompt
-                    | self._generate_with_timing
-                    | StrOutputParser()
-                ),
+                answer=RunnableLambda(self._generate_answer_with_timing),
             )
             # Step 5: Compute trace AFTER generation is complete
             | RunnableParallel(
                 answer=RunnableLambda(lambda x: x["answer"]),
                 sources=RunnableLambda(lambda x: x["sources"]),
-                trace=RunnableLambda(lambda _: self._get_trace()),
+                trace=RunnableLambda(lambda x: self._get_trace(x)),
             )
         )
 
@@ -271,7 +272,10 @@ class RAGChain:
         # Retrieve
         docs = self.retriever.invoke(inputs["query"])
 
-        self._timing["retrieval"] = time.time() - start
+        # Store timing in inputs dict instead of instance variable
+        duration = time.time() - start
+        inputs["_retrieval_duration"] = duration
+
         return docs
 
     def _rerank_with_timing(self, inputs: dict[str, Any]) -> list[Document]:
@@ -280,27 +284,57 @@ class RAGChain:
 
         docs = self.reranker.rerank(inputs["query"], inputs["documents"])
 
-        self._timing["reranking"] = time.time() - start
+        # Store timing in inputs dict instead of instance variable
+        duration = time.time() - start
+        inputs["_reranking_duration"] = duration
+
         return docs
 
-    def _generate_with_timing(self, messages: Any) -> Any:
-        """Wrap LLM with timing."""
-        start = time.time()
-        result = self.llm.invoke(messages)
-        self._timing["generation"] = time.time() - start
-        return result
+    def _generate_answer_with_timing(self, inputs: dict[str, Any]) -> str:
+        """Generate answer with timing, storing duration in inputs dict."""
+        # Build the prompt
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", SYSTEM_PROMPT),
+                ("human", "{query}"),
+            ]
+        )
 
-    def _get_trace(self) -> Trace:
-        """Get timing trace for the pipeline."""
-        total = sum(self._timing.values())
+        start = time.time()
+
+        # Format and invoke
+        messages = prompt.invoke({"query": inputs["query"], "context": inputs["context"]})
+        result = self.llm.invoke(messages)
+
+        # Store timing in inputs dict
+        duration = time.time() - start
+        inputs["_generation_duration"] = duration
+
+        # Parse to string
+        return StrOutputParser().invoke(result)
+
+    def _get_trace(self, inputs: dict[str, Any]) -> Trace:
+        """Get timing trace for the pipeline from inputs dict."""
+        retrieval = inputs.get("_retrieval_duration", 0.0)
+        reranking = inputs.get("_reranking_duration")
+        generation = inputs.get("_generation_duration", 0.0)
+
+        total = retrieval + (reranking or 0.0) + generation
+
         return Trace(
-            embeddingDuration=self._timing.get("embedding", 0.0),
-            retrievalDuration=self._timing.get("retrieval", 0.0),
-            rerankingDuration=self._timing.get("reranking"),
-            generationDuration=self._timing.get("generation", 0.0),
+            embeddingDuration=0.0,  # Not tracked separately
+            retrievalDuration=retrieval,
+            rerankingDuration=reranking,
+            generationDuration=generation,
             totalDuration=total,
         )
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((openai.RateLimitError, httpx.TimeoutException)),
+        reraise=True
+    )
     @traceable(name="RAG Query", run_type="chain")
     def invoke(
         self,
@@ -317,16 +351,26 @@ class RAGChain:
         Returns:
             Dict with answer, sources, and trace
         """
-        # Reset timing
-        self._timing = {}
-
         # Execute chain
         inputs = {"query": query}
         if filter:
             inputs["filter"] = filter
 
-        return self._chain.invoke(inputs)
+        result = self._chain.invoke(inputs)
 
+        # Capture run ID from trace context
+        run_tree = get_current_run_tree()
+        if run_tree:
+            result["run_id"] = str(run_tree.id)
+
+        return result
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((openai.RateLimitError, httpx.TimeoutException)),
+        reraise=True
+    )
     @traceable(name="RAG Query", run_type="chain")
     async def ainvoke(
         self,
@@ -334,12 +378,18 @@ class RAGChain:
         filter: Optional[MetadataFilter] = None,
     ) -> dict[str, Any]:
         """Async version of invoke."""
-        self._timing = {}
         inputs = {"query": query}
         if filter:
             inputs["filter"] = filter
 
-        return await self._chain.ainvoke(inputs)
+        result = await self._chain.ainvoke(inputs)
+
+        # Capture run ID from trace context
+        run_tree = get_current_run_tree()
+        if run_tree:
+            result["run_id"] = str(run_tree.id)
+
+        return result
 
     def stream(
         self,
@@ -351,7 +401,6 @@ class RAGChain:
 
         Yields chunks as they're generated by the LLM.
         """
-        self._timing = {}
         inputs = {"query": query}
         if filter:
             inputs["filter"] = filter
@@ -364,7 +413,6 @@ class RAGChain:
         filter: Optional[MetadataFilter] = None,
     ):
         """Async streaming version."""
-        self._timing = {}
         inputs = {"query": query}
         if filter:
             inputs["filter"] = filter

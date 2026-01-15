@@ -44,6 +44,11 @@ export default function ChatPage() {
 
     // Call RAG API with streaming
     setIsTyping(true)
+
+    // Setup timeout controller
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -51,7 +56,10 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ query: content, stream: true }),
+        signal: controller.signal,
       })
+
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         throw new Error('Failed to get response from API')
@@ -72,6 +80,12 @@ export default function ChatPage() {
           if (done) break
 
           buffer += decoder.decode(value, { stream: true })
+
+          // Buffer overflow protection
+          if (buffer.length > 100000) {
+            throw new Error('Response buffer overflow')
+          }
+
           const lines = buffer.split('\n')
           buffer = lines.pop() || '' // Keep incomplete line in buffer
 
@@ -140,7 +154,17 @@ export default function ChatPage() {
         setIsTyping(false)
       }
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Chat API Error:', error)
+
+      // Determine error message
+      let errorMessage = "Sorry, I encountered an error processing your question. Please try again."
+      if ((error as Error).name === 'AbortError') {
+        errorMessage = "Request timed out after 30 seconds. Please try again with a shorter query."
+      } else if ((error as Error).message === 'Response buffer overflow') {
+        errorMessage = "Response too large. Please try a more specific query."
+      }
+
       // Show error message to user
       setMessages((prev) => {
         const updated = [...prev]
@@ -148,7 +172,7 @@ export default function ChatPage() {
         if (msgIndex !== -1) {
           updated[msgIndex] = {
             ...updated[msgIndex],
-            content: "Sorry, I encountered an error processing your question. Please try again.",
+            content: errorMessage,
           }
         }
         return updated
