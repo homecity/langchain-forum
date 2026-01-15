@@ -54,11 +54,14 @@ class LangSmithEvaluationClient:
     async def get_summary(self) -> EvaluationSummary:
         """Get summary statistics for evaluation runs."""
         try:
-            runs = list(self.client.list_runs(
+            # Filter for RAG Query runs specifically
+            all_runs = list(self.client.list_runs(
                 project_name=self.project_name,
                 is_root=True,
-                limit=50,
+                limit=100,
             ))
+            # Filter for RAG Query runs (our traceable decorator name)
+            runs = [r for r in all_runs if r.name == "RAG Query"]
 
             if not runs:
                 return EvaluationSummary(
@@ -90,7 +93,7 @@ class LangSmithEvaluationClient:
                                 faithfulness_scores.append(fb.score)
                             elif "relevan" in key:
                                 relevance_scores.append(fb.score)
-                            elif "correct" in key:
+                            elif "correct" in key or "cohere" in key:
                                 correctness_scores.append(fb.score)
                 except Exception:
                     pass
@@ -134,11 +137,13 @@ class LangSmithEvaluationClient:
     async def get_runs(self, limit: int = 10) -> list[EvaluationRun]:
         """Get evaluation runs."""
         try:
-            runs = list(self.client.list_runs(
+            # Fetch more runs and filter for RAG Query
+            all_runs = list(self.client.list_runs(
                 project_name=self.project_name,
                 is_root=True,
-                limit=limit,
+                limit=limit * 5,  # Fetch more to account for filtering
             ))
+            runs = [r for r in all_runs if r.name == "RAG Query"][:limit]
 
             result = []
             for run in runs:
@@ -153,7 +158,7 @@ class LangSmithEvaluationClient:
                                 metrics.faithfulness = fb.score
                             elif "relevan" in key:
                                 metrics.relevance = fb.score
-                            elif "correct" in key:
+                            elif "correct" in key or "cohere" in key:
                                 metrics.correctness = fb.score
                             elif "helpful" in key:
                                 metrics.helpfulness = fb.score
@@ -193,11 +198,13 @@ class LangSmithEvaluationClient:
     async def get_traces(self, limit: int = 20) -> list[EvaluationTrace]:
         """Get recent traces."""
         try:
-            runs = list(self.client.list_runs(
+            # Fetch more runs and filter for RAG Query
+            all_runs = list(self.client.list_runs(
                 project_name=self.project_name,
                 is_root=True,
-                limit=limit,
+                limit=limit * 5,
             ))
+            runs = [r for r in all_runs if r.name == "RAG Query"][:limit]
 
             result = []
             for run in runs:
@@ -228,7 +235,7 @@ class LangSmithEvaluationClient:
                                 scores.faithfulness = fb.score
                             elif "relevan" in key:
                                 scores.relevance = fb.score
-                            elif "correct" in key:
+                            elif "correct" in key or "cohere" in key:
                                 scores.correctness = fb.score
                 except Exception:
                     pass

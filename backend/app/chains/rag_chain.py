@@ -15,6 +15,7 @@ import logging
 from functools import lru_cache
 from typing import Any, Optional
 
+from langsmith import traceable
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -43,16 +44,18 @@ SYSTEM_PROMPT = """You are a helpful assistant specializing in LangChain, LangSm
 You answer questions based on the provided context from the LangChain forum and documentation.
 
 RULES:
-1. Only answer based on the provided context. If the context doesn't contain relevant information, say "I don't have enough information to answer this question."
-2. Cite sources when possible by mentioning the forum post title or documentation page.
-3. Be concise but thorough in your explanations.
-4. If the question is about code, provide code examples when relevant.
-5. Format your response using markdown for better readability.
+1. Answer based on the provided context. Use the context to synthesize a helpful response.
+2. If the context contains related information, use it to provide useful guidance even if it doesn't perfectly match the question.
+3. Cite sources when possible by mentioning the forum post title or documentation page.
+4. Be concise but thorough in your explanations.
+5. If the question is about code, provide code examples when relevant.
+6. Format your response using markdown for better readability.
+7. Only say "I don't have enough information" if the context is completely unrelated to the question.
 
 CONTEXT:
 {context}
 
-Remember: Only use information from the context above. Do not make up information."""
+Use the context above to provide a helpful answer."""
 
 
 # =============================================================================
@@ -230,19 +233,24 @@ class RAGChain:
             | RunnablePassthrough.assign(
                 reranked_docs=self._rerank_with_timing,
             )
-            # Step 3: Format context
+            # Step 3: Format context and sources (can be parallel since no timing)
             | RunnablePassthrough.assign(
                 context=lambda x: format_context(x["reranked_docs"]),
+                sources=lambda x: format_sources(x["reranked_docs"]),
             )
-            # Step 4: Generate answer with parallel source formatting
-            | RunnableParallel(
+            # Step 4: Generate answer (must complete before trace)
+            | RunnablePassthrough.assign(
                 answer=(
                     RunnableLambda(lambda x: {"query": x["query"], "context": x["context"]})
                     | prompt
                     | self._generate_with_timing
                     | StrOutputParser()
                 ),
-                sources=RunnableLambda(lambda x: format_sources(x["reranked_docs"])),
+            )
+            # Step 5: Compute trace AFTER generation is complete
+            | RunnableParallel(
+                answer=RunnableLambda(lambda x: x["answer"]),
+                sources=RunnableLambda(lambda x: x["sources"]),
                 trace=RunnableLambda(lambda _: self._get_trace()),
             )
         )
@@ -293,6 +301,7 @@ class RAGChain:
             totalDuration=total,
         )
 
+    @traceable(name="RAG Query", run_type="chain")
     def invoke(
         self,
         query: str,
@@ -318,6 +327,7 @@ class RAGChain:
 
         return self._chain.invoke(inputs)
 
+    @traceable(name="RAG Query", run_type="chain")
     async def ainvoke(
         self,
         query: str,

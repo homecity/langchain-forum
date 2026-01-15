@@ -3,23 +3,97 @@ Chat API Route.
 
 POST /api/chat - RAG query endpoint with streaming support.
 GET /api/chat - Health check.
+
+Includes automatic evaluation and LangSmith feedback submission.
 """
 
+import asyncio
 import logging
 import time
 from typing import AsyncGenerator
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from langsmith import Client as LangSmithClient
 from pydantic import BaseModel
 
 from app.config import get_settings
 from app.chains.rag_chain import get_rag_chain
+from app.components.evaluator import RAGEvaluator
 from app.models.schemas import ChatRequest, ChatResponse, Source, Trace
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Initialize evaluator (singleton)
+_evaluator: RAGEvaluator | None = None
+
+
+def get_evaluator() -> RAGEvaluator:
+    """Get or create evaluator singleton."""
+    global _evaluator
+    if _evaluator is None:
+        _evaluator = RAGEvaluator()
+    return _evaluator
+
+
+async def submit_langsmith_feedback(
+    query: str,
+    context: str,
+    answer: str,
+    project_name: str,
+    langsmith_api_key: str,
+) -> None:
+    """
+    Compute evaluation metrics and submit as LangSmith feedback.
+
+    This runs asynchronously in the background after the response is sent.
+    """
+    try:
+        # Initialize LangSmith client
+        client = LangSmithClient(api_key=langsmith_api_key)
+
+        # Find the most recent RAG Query run with this query
+        runs = list(client.list_runs(
+            project_name=project_name,
+            is_root=True,
+            limit=20,  # Fetch more to find RAG Query runs
+        ))
+
+        # Filter for RAG Query runs and find matching query
+        target_run = None
+        for run in runs:
+            if run.name != "RAG Query":
+                continue
+            if run.inputs and isinstance(run.inputs, dict):
+                run_query = run.inputs.get("query", "")
+                if query[:50] in str(run_query)[:50]:  # Fuzzy match
+                    target_run = run
+                    break
+
+        if not target_run:
+            logger.warning(f"Could not find LangSmith run for query: {query[:50]}...")
+            return
+
+        # Compute evaluation scores
+        evaluator = get_evaluator()
+        scores = await evaluator.evaluate_async(query, context, answer)
+
+        # Submit feedback for each metric
+        for metric, score in scores.items():
+            if metric != "overall":  # Skip overall, it's derived
+                client.create_feedback(
+                    run_id=target_run.id,
+                    key=metric,
+                    score=score,
+                    comment=f"Auto-evaluated {metric} score",
+                )
+
+        logger.info(f"Submitted LangSmith feedback: {scores}")
+
+    except Exception as e:
+        logger.error(f"Failed to submit LangSmith feedback: {e}")
 
 
 # =============================================================================
@@ -110,7 +184,6 @@ async def chat(request: ChatRequest):
     # Mock mode for development
     if settings.use_mock_chat:
         logger.info("Using mock response (USE_MOCK_CHAT=true)")
-        import asyncio
         await asyncio.sleep(0.8)  # Simulate processing delay
         return MOCK_RESPONSE
 
@@ -128,6 +201,25 @@ async def chat(request: ChatRequest):
         )
 
         logger.info(f"Query processed in {time.time() - start:.2f}s")
+
+        # Build context string from sources for evaluation
+        context = "\n\n".join([
+            f"[{s.title}]: {s.snippet}"
+            for s in result["sources"]
+        ]) if result["sources"] else ""
+
+        # Submit evaluation feedback to LangSmith in background
+        # (non-blocking - response is sent immediately)
+        if settings.langsmith_api_key and settings.langchain_tracing_v2:
+            asyncio.create_task(
+                submit_langsmith_feedback(
+                    query=request.query,
+                    context=context,
+                    answer=result["answer"],
+                    project_name=settings.langchain_project,
+                    langsmith_api_key=settings.langsmith_api_key,
+                )
+            )
 
         return ChatResponse(
             answer=result["answer"],
@@ -163,11 +255,10 @@ async def chat_stream(request: ChatRequest):
         try:
             if settings.use_mock_chat:
                 # Mock streaming
-                import asyncio
                 await asyncio.sleep(0.5)
 
                 # Send sources first
-                import json
+                import json  # noqa: Local import for streaming
                 sources_data = [s.model_dump() for s in MOCK_RESPONSE.sources]
                 yield f"data: {json.dumps({'type': 'sources', 'sources': sources_data})}\n\n"
 

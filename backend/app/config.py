@@ -38,8 +38,8 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4o-mini"
     llm_temperature: float = 0.1
     llm_max_tokens: int = 1000
-    retrieval_top_k: int = 5
-    rerank_top_k: int = 3
+    retrieval_top_k: int = 10  # Increased from 5 to get more diverse candidates
+    rerank_top_k: int = 5  # Increased from 3 to provide more context
 
     # Data paths
     embeddings_file: str = "data/embeddings.json"
