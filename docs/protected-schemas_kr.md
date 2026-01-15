@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines immutable RAG system components that require user approval and full impact analysis before modification.
+Define immutable RAG system components that require user approval + full impact analysis before modification.
 
 ---
 
@@ -20,9 +20,9 @@ Defines immutable RAG system components that require user approval and full impa
 - HuggingFace `sentence-transformers/all-MiniLM-L6-v2`: **384 dimensions**
 
 **Why Protected:**
-- Changing dimensions breaks ALL existing vectors
+- Changing dimension breaks ALL existing vectors
 - Vector store indexes are dimension-specific
-- No automatic migration path exists
+- No automatic migration path
 
 **Impact of Change:**
 - Full re-indexing required (hours to days)
@@ -31,7 +31,7 @@ Defines immutable RAG system components that require user approval and full impa
 - Old vectors become unusable
 
 **Protection Rule:**
-- 🚫 **NEVER** change dimensions without user approval
+- 🚫 **NEVER** change dimension without user approval
 - 🚫 **ALWAYS** require full re-indexing plan
 - ✅ **MUST** backup existing vectors before migration
 
@@ -59,10 +59,10 @@ Defines immutable RAG system components that require user approval and full impa
 - Metadata changes affect filtering
 
 **Impact of Change:**
-- **Dimension change:** Full re-index required
+- **Dimension change:** Full re-index
 - **Metric change:** All rankings change
 - **Metadata add:** Backward compatible (OK)
-- **Metadata remove:** Breaks existing filters (BAD)
+- **Metadata remove:** Break existing filters (BAD)
 
 **Protection Rule:**
 - 🚫 **HALT:** Dimension or metric changes
@@ -89,7 +89,7 @@ Defines immutable RAG system components that require user approval and full impa
 **Why Protected:**
 - Changes document boundaries
 - Affects retrieval quality
-- Mixed old/new chunks during migration
+- Mix of old/new chunks during migration
 
 **Impact of Change:**
 - Requires full document re-processing
@@ -99,7 +99,7 @@ Defines immutable RAG system components that require user approval and full impa
 **Protection Rule:**
 - 🚫 **HALT:** Chunk size or overlap changes
 - 🚫 **HALT:** Separator logic changes
-- ✅ **PROCEED:** Adding new splitter (only if re-processing all docs)
+- ✅ **PROCEED:** Adding new splitter (if re-processing all docs)
 
 ---
 
@@ -115,7 +115,7 @@ Defines immutable RAG system components that require user approval and full impa
 
 **Why Protected:**
 - Changes ALL similarity scores
-- Completely affects ranking
+- Affects ranking completely
 - No migration path (just switch)
 
 **Impact of Change:**
@@ -186,7 +186,7 @@ Defines immutable RAG system components that require user approval and full impa
 3. **Test:** Re-embed 10-20 sample documents
 4. **Validate:** Query sample, compare results
 5. **Migrate:** Re-embed all documents (batch job)
-6. **Switch:** Point application to new index
+6. **Switch:** Point app to new index
 7. **Monitor:** LangSmith traces for 7 days
 8. **Cleanup:** Delete old index after 30 days
 
@@ -199,7 +199,7 @@ Defines immutable RAG system components that require user approval and full impa
 **Example:** chunk_size=512 → chunk_size=1024
 
 **Steps:**
-1. **Document:** Screenshot old configuration + code
+1. **Document:** Screenshot old config + code
 2. **Test:** A/B test on 100 queries
    - Measure: Precision@5, Recall@5, MRR
 3. **Compare:** Old vs new strategy metrics
@@ -218,7 +218,7 @@ Defines immutable RAG system components that require user approval and full impa
 **Example:** Add `category: string` to vectors
 
 **Steps:**
-1. **Check compatibility:** Does vector store support metadata updates?
+1. **Check compatibility:** Vector store supports metadata updates?
 2. **Update schema:** Add `category` to metadata config
 3. **Backfill:** Update existing vectors with `category` (if needed)
 4. **Test:** Query with new filter `category="technical"`

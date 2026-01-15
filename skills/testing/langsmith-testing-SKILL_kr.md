@@ -6,7 +6,7 @@ description: LangSmith trace validation for RAG observability - every query must
 license: MIT
 priority: critical
 triggers:
-  - "LangSmith", "trace", "evaluation", "tracking", "observability"
+  - "LangSmith", "trace", "evaluation", "추적", "관찰"
   - RAG query execution
   - Evaluation tasks
 dependencies:
@@ -34,7 +34,7 @@ changelog:
 ## Auto-Trigger Conditions
 
 **Activate when:**
-- User mentions: "LangSmith", "trace", "evaluation", "tracking"
+- User mentions: "LangSmith", "trace", "evaluation", "추적"
 - RAG query execution
 - Evaluation tasks
 - Performance debugging

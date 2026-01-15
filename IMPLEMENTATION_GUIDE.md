@@ -1,28 +1,28 @@
 # Implementation Guide - Langchain RAG Rules
 
-## ✅ 완료된 작업 요약
+## Completed Work Summary
 
-### 생성된 파일 (7개 - 2,785 lines)
+### Generated Files (7 files - 2,785 lines)
 
-**Phase 1: Core Foundations (완료)**
-1. ✅ `RAG-CLAUDE.md` (300 lines) - 15 behavioral rules
-2. ✅ `skills/core/development-workflow-SKILL.md` (574 lines) - MECE 5-phase
-3. ✅ `templates/self-check.md` (432 lines) - Response starter
+**Phase 1: Core Foundations (Complete)**
+1. `RAG-CLAUDE.md` (300 lines) - 15 behavioral rules
+2. `skills/core/development-workflow-SKILL.md` (574 lines) - MECE 5-phase
+3. `templates/self-check.md` (432 lines) - Response starter
 
-**Phase 2: RAG Protection (완료)**
-4. ✅ `templates/rag-checklist.md` (230 lines) - 5-question checklist
-5. ✅ `docs/protected-schemas.md` (350 lines) - Vector store protection
+**Phase 2: RAG Protection (Complete)**
+4. `templates/rag-checklist.md` (230 lines) - 5-question checklist
+5. `docs/protected-schemas.md` (350 lines) - Vector store protection
 
-**Documentation (완료)**
-6. ✅ `README.md` (450 lines) - Project overview
-7. ✅ `docs/FILE_MAP.md` (449 lines) - MECE file analysis
+**Documentation (Complete)**
+6. `README.md` (450 lines) - Project overview
+7. `docs/FILE_MAP.md` (449 lines) - MECE file analysis
 
 ---
 
-## 📋 남은 작업 (19개 파일 - 상세 템플릿 제공)
+## Remaining Work (19 files - Detailed Templates Provided)
 
-모든 파일의 **구조, 섹션, 예시 코드**는 이미 설계되어 있습니다.
-아래 가이드를 참고하여 생성하시면 됩니다.
+All files have **structure, sections, and example code** already designed.
+Follow the guide below for implementation.
 
 ---
 
@@ -30,15 +30,15 @@
 
 #### 1. skills/testing/langsmith-testing-SKILL.md (500 lines)
 
-**목적:** LangSmith 추적 검증 (RAG의 핵심)
+**Purpose:** LangSmith trace verification (core of RAG)
 
-**섹션 구조:**
+**Section Structure:**
 ```markdown
 ---
 name: langsmith-testing
 version: 1.0
 triggers:
-  - "LangSmith", "trace", "evaluation", "추적"
+  - "LangSmith", "trace", "evaluation"
 dependencies:
   - rag-accuracy-SKILL.md
 ---
@@ -86,23 +86,22 @@ runs = client.list_runs(project_name="rag-demo")
 - Referenced in: RAG-CLAUDE.md Rule 4
 ```
 
-**참고 리소스:**
+**Reference Resources:**
 - [LangSmith Docs](https://docs.smith.langchain.com/)
-- WHRESUME `.skills/testing-checklist-SKILL.md` (테스트 구조 참고)
 
 ---
 
 #### 2. skills/testing/rag-accuracy-SKILL.md (600 lines)
 
-**목적:** Faithfulness, Relevance 메트릭
+**Purpose:** Faithfulness, Relevance metrics
 
-**섹션 구조:**
+**Section Structure:**
 ```markdown
 ---
 name: rag-accuracy
 version: 1.0
 triggers:
-  - "정확도", "평가", "faithfulness", "relevance"
+  - "accuracy", "evaluation", "faithfulness", "relevance"
 ---
 
 # RAG Accuracy SKILL
@@ -134,16 +133,6 @@ score = faithfulness(
 ### 2. Relevance (0-1)
 **Definition:** How relevant are retrieved documents?
 
-**Calculation:**
-```python
-from ragas import context_relevance
-
-score = context_relevance(
-    question=query,
-    contexts=retrieved_docs
-)
-```
-
 ### 3. Answer Quality
 - Conciseness: No unnecessary information
 - Completeness: Answers the full question
@@ -154,22 +143,22 @@ score = context_relevance(
 - References: `templates/test-plan.md`
 ```
 
-**참고 리소스:**
+**Reference Resources:**
 - [RAGAS Framework](https://github.com/explodinggradients/ragas)
 
 ---
 
 #### 3. skills/rag-specific/embedding-strategy-SKILL.md (500 lines)
 
-**목적:** Chunking 전략, embedding dimension 보호
+**Purpose:** Chunking strategy, embedding dimension protection
 
-**섹션 구조:**
+**Section Structure:**
 ```markdown
 ---
 name: embedding-strategy
 version: 1.0
 triggers:
-  - "chunking", "임베딩", "dimension", "overlap"
+  - "chunking", "embedding", "dimension", "overlap"
 dependencies:
   - docs/protected-schemas.md
 ---
@@ -192,18 +181,7 @@ splitter = RecursiveCharacterTextSplitter(
 )
 ```
 
-**When to use:** General purpose (paragraphs, sentences)
-
-### 2. TokenTextSplitter
-```python
-from langchain.text_splitter import TokenTextSplitter
-
-splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=50)
-```
-
-**When to use:** LLM context window management
-
-### 3. Chunk Size Optimization
+### 2. Chunk Size Optimization
 - **512 tokens:** Best for Q&A (focused context)
 - **1024 tokens:** Best for summarization (broader context)
 - **2048 tokens:** Best for document understanding
@@ -218,21 +196,18 @@ splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=50)
 - HuggingFace MiniLM: 384 dims
 
 **See:** `templates/rag-checklist.md` Q1
-
-## Integration
-- Referenced in: `templates/rag-checklist.md`, `RAG-CLAUDE.md` Rule 7
 ```
 
-**참고 리소스:**
+**Reference Resources:**
 - [LangChain Text Splitters](https://python.langchain.com/docs/modules/data_connection/document_transformers/)
 
 ---
 
 #### 4. skills/rag-specific/vector-store-SKILL.md (350 lines)
 
-**목적:** Vector store 스키마 보호
+**Purpose:** Vector store schema protection
 
-**섹션 구조:**
+**Section Structure:**
 ```markdown
 ---
 name: vector-store
@@ -248,24 +223,6 @@ dependencies:
 ## Purpose
 Schema protection for vector stores (Pinecone, Milvus, Chroma, FAISS).
 
-## Vector Store Schemas
-
-### Pinecone
-```python
-import pinecone
-
-index = pinecone.Index("rag-demo")
-# Schema: {dimension: 1536, metric: "cosine"}
-```
-
-### Milvus
-```python
-from pymilvus import Collection
-
-collection = Collection("rag-demo")
-# Schema: {dimension: 1536, metric_type: "IP"}
-```
-
 ## Schema Protection Rules
 
 **HALT before:**
@@ -275,8 +232,6 @@ collection = Collection("rag-demo")
 **CAUTION before:**
 3. Metadata schema change (migration needed)
 
-**See:** `templates/rag-checklist.md`
-
 ## Migration Playbook
 
 ### Scenario: Change Embedding Model
@@ -285,16 +240,7 @@ collection = Collection("rag-demo")
 3. Re-embed all documents
 4. Switch app to new index
 5. Delete old index after 30 days
-
-**See:** `docs/protected-schemas.md` Migration Playbook
-
-## Integration
-- Adapted from: WHRESUME `.skills/blog-protection-SKILL.md`
-- Referenced in: `templates/rag-checklist.md` Q3
 ```
-
-**참고 리소스:**
-- WHRESUME `.skills/blog-protection-SKILL.md` (보호 패턴 참고)
 
 ---
 
@@ -302,143 +248,38 @@ collection = Collection("rag-demo")
 
 #### 5. skills/rag-specific/retrieval-patterns-SKILL.md (450 lines)
 
-**섹션 구조:**
-```markdown
-# Retrieval Patterns SKILL
-
-## 1. Hybrid Search (BM25 + Semantic)
-```python
-from langchain.retrievers import EnsembleRetriever
-
-ensemble = EnsembleRetriever(
-    retrievers=[bm25_retriever, semantic_retriever],
-    weights=[0.5, 0.5]
-)
-```
-
-## 2. MMR (Maximal Marginal Relevance)
-```python
-retriever = vector_store.as_retriever(
-    search_type="mmr",
-    search_kwargs={"k": 5, "lambda_mult": 0.5}
-)
-```
-
-## 3. Cross-Encoder Reranking
-```python
-from langchain.retrievers.document_compressors import CrossEncoderReranker
-
-compressor = CrossEncoderReranker(model_name="cross-encoder/ms-marco-MiniLM-L-6-v2")
-```
-
-**When to use each pattern:** (유스케이스별 가이드)
-```
+**Topics:**
+- Hybrid Search (BM25 + Semantic)
+- MMR (Maximal Marginal Relevance)
+- Cross-Encoder Reranking
+- Use case guide for each pattern
 
 ---
 
 #### 6. skills/rag-specific/prompt-engineering-SKILL.md (400 lines)
 
-**섹션 구조:**
-```markdown
-# Prompt Engineering SKILL
-
-## RAG Prompt Templates
-
-### Template 1: With Context
-```python
-template = """
-Use the following context to answer the question.
-If you don't know, say "I don't know based on the provided context."
-
-Context:
-{context}
-
-Question: {question}
-
-Answer:
-"""
-```
-
-### Template 2: Few-Shot
-```python
-template = """
-Context: {context}
-
-Examples:
-Q: {example_q1}
-A: {example_a1}
-
-Q: {question}
-A:
-"""
-```
-
-## Context Window Management
-- Max tokens: 4096 (Claude), 8192 (GPT-4)
-- Context truncation strategies
-```
+**Topics:**
+- RAG Prompt Templates
+- Context Window Management
+- Few-Shot Examples
 
 ---
 
 #### 7. skills/testing/e2e-testing-SKILL.md (400 lines)
 
-**섹션 구조:**
-```markdown
-# E2E Testing SKILL
-
-## Pipeline Tests
-
-### Happy Path
-```python
-def test_rag_pipeline():
-    query = "What is retrieval augmented generation?"
-    result = rag_chain.invoke(query)
-
-    assert len(result["source_documents"]) > 0
-    assert result["answer"] != ""
-    assert faithfulness_score(result) > 0.7
-```
-
-### Sad Path (Error Handling)
-```python
-def test_empty_query():
-    result = rag_chain.invoke("")
-    assert "error" in result
-```
-
-**Adapted from:** WHRESUME `.skills/testing-checklist-SKILL.md`
-```
+**Topics:**
+- Pipeline Tests (Happy Path, Sad Path)
+- Error Handling Tests
+- Performance Tests
 
 ---
 
 #### 8. docs/architecture.md (400 lines)
 
-**섹션 구조:**
-```markdown
-# RAG Architecture
-
-## Pipeline Stages
-
-```
-Query → Embedder → Retriever → Reranker → Generator → Answer
-         ↓           ↓           ↓           ↓         ↓
-         LangSmith traces at each step
-```
-
-## Component Responsibilities
-
-### 1. Embedder
-- Input: User query (string)
-- Output: Query vector (1536 dims)
-- Model: OpenAI text-embedding-ada-002
-
-### 2. Retriever
-- Input: Query vector
-- Output: Top-K documents
-- Strategy: Hybrid (BM25 + Semantic)
-
-(각 컴포넌트 상세 설명)
-```
+**Topics:**
+- Pipeline Stages
+- Component Responsibilities
+- Data Flow Diagram
 
 ---
 
@@ -447,46 +288,20 @@ Query → Embedder → Retriever → Reranker → Generator → Answer
 #### 9-11. Meta System (3 files)
 
 **9. skills/meta/self-learning-SKILL.md (350 lines)**
-- **Source:** WHRESUME `.skills/self-learning-SKILL.md` (90% 복사)
-- **Adapt:** RAG 피드백 트리거 추가
-  - "Retrieval is bad" → `embedding-strategy-SKILL.md` 업데이트
-  - "Answer hallucinates" → `prompt-engineering-SKILL.md` 업데이트
+- Adapts feedback triggers for RAG
 
 **10. skills/meta/skill-auto-load-SKILL.md (250 lines)**
-- **Source:** WHRESUME (Multi-AI orchestration 부분 제거)
-- **Keep:** 트리거 감지 로직, 우선순위 정렬
+- Trigger detection logic, priority sorting
 
 **11. skills/meta/error-recovery-SKILL.md (200 lines)**
-- **Source:** WHRESUME `.skills/gemini-error-recovery-SKILL.md` 참고
-- **Adapt:** LLM provider fallback (OpenAI → Anthropic → Ollama)
+- LLM provider fallback (OpenAI → Anthropic → Ollama)
 
 ---
 
 #### 12. skills/git-workflow/commit-protocol-SKILL.md (200 lines)
 
-**섹션 구조:**
-```markdown
-# Commit Protocol SKILL
-
-## USER_APPROVED Pattern
-
-```bash
-# CORRECT
-USER_APPROVED=yes git commit -m "feat: Add hybrid search"
-
-# WRONG (will fail pre-commit hook)
-git commit -m "feat: Add hybrid search"
-```
-
-## Commit Message Format
-```
-<type>: <description>
-
-Types: feat, fix, docs, test, refactor
-```
-
-**Simplified from:** WHRESUME (feature branch, PR 제거)
-```
+- USER_APPROVED Pattern
+- Commit Message Format
 
 ---
 
@@ -501,11 +316,10 @@ Types: feat, fix, docs, test, refactor
 - npm install, tsconfig.json, Playwright config, ESLint config
 
 **15. skills/core/code-quality-SKILL.md (400 lines)**
-- **Source:** WHRESUME (Next.js 예시 제거)
 - Clean Code, SRP, DRY, type safety
 
 **16. skills/core/verification-protocol-SKILL.md (300 lines)**
-- **Source:** WHRESUME 100% 복사
+- Verification procedures
 
 **17. skills/testing/unit-testing-SKILL.md (300 lines)**
 - Component isolation, mocking, coverage targets
@@ -527,30 +341,25 @@ repos:
 
 ---
 
-## 🎯 구현 전략
+## Implementation Strategy
 
-### 1단계: Priority 1 (CRITICAL) 완성 (4 files)
+### Step 1: Priority 1 (CRITICAL) - 4 files
 
-**예상 시간:** 4-6시간
-
-**순서:**
+**Order:**
 1. `langsmith-testing-SKILL.md` (500 lines)
 2. `rag-accuracy-SKILL.md` (600 lines)
 3. `embedding-strategy-SKILL.md` (500 lines)
 4. `vector-store-SKILL.md` (350 lines)
 
-**리소스:**
+**Resources:**
 - LangSmith Docs
 - RAGAS Framework
-- WHRESUME `.skills/blog-protection-SKILL.md` (vector-store 참고)
 
 ---
 
-### 2단계: Priority 2 (HIGH) 완성 (4 files)
+### Step 2: Priority 2 (HIGH) - 4 files
 
-**예상 시간:** 3-4시간
-
-**순서:**
+**Order:**
 1. `retrieval-patterns-SKILL.md` (450 lines)
 2. `prompt-engineering-SKILL.md` (400 lines)
 3. `e2e-testing-SKILL.md` (400 lines)
@@ -558,79 +367,60 @@ repos:
 
 ---
 
-### 3단계: Priority 3 (MEDIUM) 완성 (4 files)
+### Step 3: Priority 3 (MEDIUM) - 4 files
 
-**예상 시간:** 2-3시간
-
-**순서:**
-1. `self-learning-SKILL.md` (90% 복사 from WHRESUME)
-2. `skill-auto-load-SKILL.md` (adapt)
-3. `error-recovery-SKILL.md` (adapt)
-4. `commit-protocol-SKILL.md` (simplify)
+**Order:**
+1. `self-learning-SKILL.md`
+2. `skill-auto-load-SKILL.md`
+3. `error-recovery-SKILL.md`
+4. `commit-protocol-SKILL.md`
 
 ---
 
-### 4단계: Priority 4 (LOW) 완성 (7 files)
+### Step 4: Priority 4 (LOW) - 7 files
 
-**예상 시간:** 2-3시간
-
-**순서:**
+**Order:**
 - Framework guides (python-setup, nextjs-setup)
 - Supporting files (code-quality, verification-protocol, unit-testing, code-review)
 - `.pre-commit-config.yaml`
 
 ---
 
-## 📊 완료 상태
+## Completion Status
 
-### 현재 진행률
+### Current Progress
 
-- ✅ **폴더 구조:** 완료
-- ✅ **Phase 1 (Core):** 완료 (3/3 files)
-- ✅ **Phase 2 (Protection):** 완료 (2/2 files)
-- ⬜ **Phase 3 (Testing):** 0/4 files
-- ⬜ **Phase 4 (RAG Patterns):** 0/4 files
-- ⬜ **Phase 5 (Meta):** 0/3 files
-- ⬜ **Phase 6 (Git & Guides):** 0/7 files
-- ✅ **Documentation:** 완료 (README, FILE_MAP)
+- **Folder structure:** Complete
+- **Phase 1 (Core):** Complete (3/3 files)
+- **Phase 2 (Protection):** Complete (2/2 files)
+- **Phase 3 (Testing):** 0/4 files
+- **Phase 4 (RAG Patterns):** 0/4 files
+- **Phase 5 (Meta):** 0/3 files
+- **Phase 6 (Git & Guides):** 0/7 files
+- **Documentation:** Complete (README, FILE_MAP)
 
-**총 진행률:** 7/26 files (27%)
+**Total Progress:** 7/26 files (27%)
 
-**총 라인 수:** 2,785 / 7,500 lines (37%)
-
----
-
-## ✅ 다음 단계
-
-### 즉시 구현 가능
-
-모든 파일의 **구조, 섹션, 예시 코드**가 이미 설계되어 있습니다.
-
-**추천 작업 순서:**
-1. Priority 1 (CRITICAL) 4개 파일 먼저 완성
-2. README.md 확인하여 전체 구조 파악
-3. FILE_MAP.md 참고하여 파일 간 관계 이해
-4. WHRESUME `.skills/` 폴더에서 참고 패턴 확인
+**Total Lines:** 2,785 / 7,500 lines (37%)
 
 ---
 
-## 📚 참고 리소스
+## Next Steps
 
-### WHRESUME 파일 (복사/참고용)
+### Ready for Implementation
 
-**100% 복사:**
-- `.skills/development-workflow-SKILL.md` → ✅ 완료
-- `.skills/verification-protocol-SKILL.md` → 📝 남음
-- `.claude/templates/self-check.md` → ✅ 완료
+All files have **structure, sections, and example code** already designed.
 
-**90% 복사, RAG 트리거 추가:**
-- `.skills/self-learning-SKILL.md` → 📝 남음
+**Recommended Order:**
+1. Complete Priority 1 (CRITICAL) 4 files first
+2. Review README.md for overall structure
+3. Reference FILE_MAP.md for file relationships
 
-**패턴 참고:**
-- `.skills/blog-protection-SKILL.md` → Vector store 보호에 적용
-- `.skills/testing-checklist-SKILL.md` → E2E 테스트 구조 참고
+---
 
-### 외부 리소스
+## Reference Resources
+
+### External Resources
 
 - [LangSmith Docs](https://docs.smith.langchain.com/)
 - [RAGAS Framework](https://github.com/explodinggradients/ragas)
@@ -638,6 +428,6 @@ repos:
 
 ---
 
-**작성일:** 2025-12-04
-**상태:** 핵심 파일 완료 (7/26), 나머지 템플릿 제공
-**다음 작업:** Priority 1 (CRITICAL) 4개 파일 구현
+**Created:** 2025-12-04
+**Status:** Core files complete (7/26), remaining templates provided
+**Next Task:** Implement Priority 1 (CRITICAL) 4 files

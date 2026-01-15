@@ -6,7 +6,7 @@ description: PROTECTED - Chunking strategy and embedding dimension management
 license: MIT
 priority: critical
 triggers:
-  - "chunking", "embedding", "dimension", "overlap", "splitting"
+  - "chunking", "임베딩", "dimension", "overlap", "splitting"
 dependencies:
   - docs/protected-schemas.md
   - templates/rag-checklist.md

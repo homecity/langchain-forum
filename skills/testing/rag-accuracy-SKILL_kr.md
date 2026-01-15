@@ -6,7 +6,7 @@ description: RAG evaluation metrics - faithfulness, relevance, answer quality me
 license: MIT
 priority: critical
 triggers:
-  - "accuracy", "evaluation", "faithfulness", "relevance", "metrics"
+  - "정확도", "평가", "faithfulness", "relevance", "메트릭"
   - Evaluation tasks
   - Quality assessment
 dependencies:
@@ -34,7 +34,7 @@ Measure RAG answer quality through three core metrics: **Faithfulness** (accurac
 ## Auto-Trigger Conditions
 
 **Activate when:**
-- User mentions: "accuracy", "evaluation", "faithfulness", "relevance", "metrics"
+- User mentions: "정확도", "평가", "faithfulness", "relevance", "메트릭"
 - Evaluation tasks
 - Quality assessment
 - A/B testing RAG variants
@@ -446,9 +446,9 @@ print(f"Avg Relevance: {avg_relevance:.2f}")
 
 # Alert if below threshold
 if avg_faithfulness < 0.7:
-    print("WARNING: Faithfulness below threshold!")
+    print("⚠️ ALERT: Faithfulness below threshold!")
 if avg_relevance < 0.7:
-    print("WARNING: Relevance below threshold!")
+    print("⚠️ ALERT: Relevance below threshold!")
 ```
 
 ---

@@ -60,47 +60,47 @@ Provide MECE (Mutually Exclusive, Collectively Exhaustive) todo template for all
 
 ## 📋 MECE Todo Template (5 Phases)
 
-### Phase 1: Requirements Analysis
+### Phase 1: 요구사항 분석 (Requirements Analysis)
 
-**Goal:** Clearly define what to build
+**목표:** 무엇을 만들지 명확히 정의
 
-- [ ] **Clarify User Story**
-  - Who: User persona
-  - What: Feature description
-  - Why: Business value
+- [ ] **사용자 스토리 명확화**
+  - 누가 (Who): 사용자 페르소나
+  - 무엇을 (What): 기능 설명
+  - 왜 (Why): 비즈니스 가치
 
-- [ ] **Define Edge Cases**
-  - Empty value handling (null, undefined, empty string)
-  - Error scenarios (network failure, timeout)
-  - Boundary values (min/max, 0, negative numbers)
+- [ ] **엣지 케이스 정의**
+  - 빈 값 처리 (null, undefined, empty string)
+  - 에러 시나리오 (네트워크 실패, 타임아웃)
+  - 경계값 (최소/최대, 0, 음수)
 
-- [ ] **Set Success Criteria**
-  - How to verify functionality
-  - Performance goals (response time, throughput)
-  - Compatibility requirements (browsers, devices)
+- [ ] **성공 기준 설정**
+  - 기능 동작 확인 방법
+  - 성능 목표 (응답시간, 처리량)
+  - 호환성 요구사항 (브라우저, 디바이스)
 
 ---
 
-### Phase 2: Design
+### Phase 2: 설계 (Design)
 
-**Goal:** Design the structure for implementation
+**목표:** 어떻게 만들지 구조 설계
 
-- [ ] **Schema Analysis**
-  - Reference: `@docs/claude/test.guide.md` (test guide)
-  - Verify database schema
-  - Define API request/response formats
-  - State management structure (Zustand, Redux)
+- [ ] **Schema 분석**
+  - 참조: `@docs/claude/test.guide.md` (테스트 가이드)
+  - 데이터베이스 스키마 확인
+  - API 요청/응답 형식 정의
+  - 상태 관리 구조 (Zustand, Redux)
 
-- [ ] **Type Definitions (TypeScript strict mode)**
-  - ❌ **NEVER use `any`** (Rule: Type safety is top priority)
+- [ ] **타입 정의 (TypeScript strict mode)**
+  - ❌ **NEVER use `any`** (Rule: 타입 안전성 최우선)
   - ✅ **ALWAYS use:**
-    - Utility types (Partial, Pick, Omit, Record)
-    - Generic types (`<T>`, `<K extends keyof T>`)
-    - Duck typing (structural typing)
+    - 유틸리티 타입 (Partial, Pick, Omit, Record)
+    - 제네릭 타입 (`<T>`, `<K extends keyof T>`)
+    - 덕타이핑 (structural typing)
     - Union types (`string | number`)
     - Discriminated unions (type guards)
 
-  **Example:**
+  **예시:**
   ```typescript
   // ❌ BAD
   function process(data: any) { ... }
@@ -109,25 +109,25 @@ Provide MECE (Mutually Exclusive, Collectively Exhaustive) todo template for all
   function process<T extends { id: string }>(data: T): Result<T> { ... }
   ```
 
-- [ ] **API Interface Design**
-  - Define REST endpoints (GET, POST, PUT, DELETE)
-  - Request/Response types
-  - Error handling structure
-  - Validation rules
+- [ ] **API 인터페이스 설계**
+  - REST endpoint 정의 (GET, POST, PUT, DELETE)
+  - Request/Response 타입
+  - Error handling 구조
+  - Validation 규칙
 
 ---
 
-### Phase 3: Implementation
+### Phase 3: 구현 (Implementation)
 
-**Goal:** Convert design into code
+**목표:** 설계를 코드로 변환
 
-- [ ] **Code Structuring (logically coherent)**
-  - Single Responsibility Principle (SRP): One role per function
-  - DRY: Eliminate duplicate code
-  - Function length: Maximum 50 lines (reduce complexity)
-  - Readability: Clear variable names, minimal comments (code explains itself)
+- [ ] **코드 구조화 (논리 정연하게)**
+  - 단일 책임 원칙 (SRP): 함수 하나당 역할 하나
+  - DRY: 중복 코드 제거
+  - 함수 길이: 최대 50줄 (복잡도 낮추기)
+  - 가독성: 변수명 명확, 주석 최소화 (코드로 설명)
 
-  **Folder structure:**
+  **폴더 구조:**
   ```
   app/api/[endpoint]/
     route.ts           # API handler
@@ -136,7 +136,7 @@ Provide MECE (Mutually Exclusive, Collectively Exhaustive) todo template for all
     types.ts           # TypeScript types
   ```
 
-- [ ] **Follow Conventions (CLAUDE.md Lines 429-455)**
+- [ ] **컨벤션 준수 (CLAUDE.md Lines 429-455)**
   - PascalCase: Components, Types
   - camelCase: Functions, variables
   - UPPER_SNAKE_CASE: Constants
@@ -144,13 +144,13 @@ Provide MECE (Mutually Exclusive, Collectively Exhaustive) todo template for all
   - Tailwind: Utility-first CSS
   - Server-first: Next.js RSC pattern
 
-- [ ] **Write E2E Tests (testing-checklist-SKILL.md)**
-  - Reference: `@docs/claude/test.guide.md`
-  - Happy path: Normal operation scenarios
-  - Sad path: Error handling scenarios
-  - Edge cases: Boundary values, empty values
+- [ ] **E2E 테스트 작성 (testing-checklist-SKILL.md)**
+  - 참조: `@docs/claude/test.guide.md`
+  - Happy path: 정상 동작 시나리오
+  - Sad path: 에러 처리 시나리오
+  - Edge cases: 경계값, 빈 값
 
-  **E2E Test Template:**
+  **E2E 테스트 템플릿:**
   ```typescript
   // tests/e2e/api-endpoint.spec.ts
   test('should create item successfully', async ({ request }) => {
@@ -172,23 +172,23 @@ Provide MECE (Mutually Exclusive, Collectively Exhaustive) todo template for all
 
 ---
 
-### Phase 4: Validation
+### Phase 4: 검증 (Validation)
 
-**Goal:** Ensure code quality + performance
+**목표:** 코드 품질 + 성능 확보
 
-- [ ] **Run E2E Logic and Fix Errors**
+- [ ] **E2E 로직 실행 및 오류 수정**
   ```bash
   npx playwright test                    # Run all E2E tests
   npx playwright test --headed           # Visual debugging
   npx playwright test -g "API endpoint"  # Specific test
   ```
 
-  **Pass criteria:**
-  - All tests green ✅
-  - Coverage: 80%+ for core logic
-  - No flaky tests (remove unstable tests)
+  **통과 기준:**
+  - 모든 테스트 green ✅
+  - Coverage: 핵심 로직 80% 이상
+  - No flaky tests (불안정한 테스트 제거)
 
-- [ ] **Check and Fix `any` Types**
+- [ ] **`any` 타입 체크 및 수정**
   ```bash
   # Search for 'any' type usage
   grep -r "any" app/ components/ lib/ --include="*.ts" --include="*.tsx"
@@ -197,68 +197,68 @@ Provide MECE (Mutually Exclusive, Collectively Exhaustive) todo template for all
   # "@typescript-eslint/no-explicit-any": "error"
   ```
 
-  **Fix methods:**
+  **수정 방법:**
   ```typescript
-  // Before: using any
+  // Before: any 사용
   function handleData(data: any) { ... }
 
-  // After 1: Generic type
+  // After 1: Generic 타입
   function handleData<T extends Record<string, unknown>>(data: T) { ... }
 
-  // After 2: Union type
+  // After 2: Union 타입
   function handleData(data: string | number | boolean) { ... }
 
-  // After 3: Interface definition
+  // After 3: Interface 정의
   interface DataStructure { id: string; value: number; }
   function handleData(data: DataStructure) { ... }
   ```
 
-- [ ] **Pessimistic Code Review (performance + quality)**
+- [ ] **코드 비관적 리뷰 (성능 + 퀄리티)**
 
-  **Checklist:**
+  **체크리스트:**
 
-  1. **Performance Optimization**
-     - [ ] No N+1 queries (database)
-     - [ ] No unnecessary re-renders (React)
-     - [ ] Apply memoization (useMemo, useCallback)
-     - [ ] Image optimization (Next.js Image)
-     - [ ] Check bundle size (`npm run build` → .next/analyze)
+  1. **성능 최적화**
+     - [ ] N+1 쿼리 없음 (데이터베이스)
+     - [ ] 불필요한 리렌더링 없음 (React)
+     - [ ] 메모이제이션 적용 (useMemo, useCallback)
+     - [ ] 이미지 최적화 (Next.js Image)
+     - [ ] 번들 크기 확인 (`npm run build` → .next/analyze)
 
-  2. **Security (secure-coding-SKILL.md)**
-     - [ ] Prevent XSS (sanitize inputs)
-     - [ ] Prevent SQL Injection (Prepared statements)
-     - [ ] CSRF token verification
-     - [ ] No sensitive info logging (passwords, API keys)
+  2. **보안 (secure-coding-SKILL.md)**
+     - [ ] XSS 방지 (입력값 sanitize)
+     - [ ] SQL Injection 방지 (Prepared statements)
+     - [ ] CSRF 토큰 검증
+     - [ ] 민감정보 로깅 금지 (비밀번호, API 키)
 
-  3. **Error Handling**
-     - [ ] Try-catch implementation
-     - [ ] User-friendly error messages
-     - [ ] Structured logging (Sentry, Winston)
-     - [ ] Fallback UI (error boundaries)
+  3. **에러 처리**
+     - [ ] Try-catch 구현
+     - [ ] 에러 메시지 사용자 친화적
+     - [ ] 로깅 구조화 (Sentry, Winston)
+     - [ ] Fallback UI (에러 바운더리)
 
-  4. **Accessibility (a11y)**
+  4. **접근성 (a11y)**
      - [ ] Semantic HTML (header, nav, main)
      - [ ] ARIA labels (button, input)
-     - [ ] Keyboard navigation (Tab, Enter)
-     - [ ] Color contrast (WCAG AA standard)
+     - [ ] 키보드 네비게이션 (Tab, Enter)
+     - [ ] 색상 대비 (WCAG AA 기준)
 
-- [ ] **Run npm run lint**
+- [ ] **npm run lint 실행**
   ```bash
   npm run lint        # ESLint + Prettier
   npm run type-check  # TypeScript errors
   ```
 
-  **Pass criteria:**
+  **통과 기준:**
   - 0 errors, 0 warnings
   - Auto-fix: `npm run lint -- --fix`
 
 ---
 
-### Phase 5: Deployment Preparation
+### Phase 5: 배포 준비 (Deployment Preparation)
 
-**Goal:** Prepare for production environment
+**목표:** 프로덕션 환경 대비
 
-- [ ] **Add Controller Exception Headers**
+- [ ] **Controller exception header 추가**
   ```typescript
   // app/api/[endpoint]/route.ts
   export async function POST(request: Request) {
@@ -280,25 +280,25 @@ Provide MECE (Mutually Exclusive, Collectively Exhaustive) todo template for all
   }
   ```
 
-- [ ] **Pass Type-check**
+- [ ] **Type-check 통과**
   ```bash
   npm run type-check  # Must pass before commit
   ```
 
-- [ ] **Build Verification (when modifying Protected Files)**
+- [ ] **빌드 검증 (Protected Files 수정 시)**
   ```bash
   npm run build       # Production build
   # Check: No errors, bundle size acceptable
   ```
 
-  **Conditional Build (Rule 21):**
-  - Simple (1-2 files): `type-check` only
+  **조건부 빌드 (Rule 21):**
+  - Simple (1-2 files): `type-check`만
   - Important (Protected/3+files/core): `type-check` + `build`
 
-- [ ] **Commit (git-workflow)**
-  - Reference: `.skills/git-workflow/commit-reminder-SKILL.md`
-  - Format: `<Type>_<AI>_<Purpose>_<FileCount>-Files`
-  - Pre-commit hook: automatic type-check
+- [ ] **커밋 (git-workflow)**
+  - 참조: `.skills/git-workflow/commit-reminder-SKILL.md`
+  - Format: `<Type>_<AI>_<용도및목적>_<파일수>-Files`
+  - Pre-commit hook: 자동 type-check
   - **NEVER auto-commit** (Rule 2)
 
 ---

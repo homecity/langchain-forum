@@ -10,134 +10,134 @@
 
 ```
 🤖 AI Self-Check:
-- 요청: [설명 / 리뷰 / 신규개발 / 버그수정 / 리팩토링 / 평가 / 검증 / 기획]
-- 📍 관련 섹션: [CLAUDE.md 섹션명]
-- 🎯 Workflow: [Claude 단독 / gemini-collaboration / multi-ai-workflow]
-- 🤖 Agent 협력: [1개 (Claude) / 2개 (Claude+Gemini) / 3개 (Claude+Gemini+CODEX)]
-- 📊 Complexity Score: [X.X점] (<7.0=단독 / 7.0-8.9=Gemini / ≥9.0=CODEX)
-- 📊 Policy Score: [X.X점 또는 N/A] (≥8.0=CODEX 권장, policy 파일 수정 시)
-- 🔓 Plan Mode: [활성 / 해제 / 사용자 승인]
+- Request Type: [Explain / Review / New Feature / Bug Fix / Refactor / Evaluate / Validate / Plan]
+- 📍 Related Section: [CLAUDE.md section name]
+- 🎯 Workflow: [Claude Solo / gemini-collaboration / multi-ai-workflow]
+- 🤖 Agent Collaboration: [1 (Claude) / 2 (Claude+Gemini) / 3 (Claude+Gemini+CODEX)]
+- 📊 Complexity Score: [X.X] (<7.0=Solo / 7.0-8.9=Gemini / ≥9.0=CODEX)
+- 📊 Policy Score: [X.X or N/A] (≥8.0=CODEX recommended for policy changes)
+- 🔓 Plan Mode: [Active / Disabled / User Approval]
 - 🔔 Multi-AI Pre-Approval: [Pending / Approved / Declined / N/A] ← NEW (rule_14 - Layer 7)
 ```
 
 ---
 
-## 📋 요청 유형 8가지 (MECE)
+## 📋 8 Request Types (MECE)
 
-| 유형 | 설명 | 예시 키워드 |
-|------|------|------------|
-| **1. 설명** | 현황 파악, 이해 | "이게 뭐야?", "어떻게 작동해?" |
-| **2. 리뷰** | 코드 검토, 현재 상태 보고 | "현재 상태는?", "문제점은?" |
-| **3. 신규개발** | 새 기능 추가 | "컴포넌트 만들어줘", "기능 추가" |
-| **4. 버그수정** | 오류 해결 | "고쳐줘", "에러 나", "안 돼" |
-| **5. 리팩토링** | 개선, 최적화 | "더 좋게", "정리해줘", "개선" |
-| **6. 평가** | 점수, 등급 제시 | "몇 점?", "품질은?" ← **사용자 명시 요청 시만** |
-| **7. 검증** | 정확성 확인 | "맞아?", "테스트해줘", "확인" |
-| **8. 기획** | 계획, 설계 | "어떻게 하지?", "방법 제시" |
+| Type | Description | Example Keywords |
+|------|-------------|-----------------|
+| **1. Explain** | Understand current state | "What is this?", "How does it work?" |
+| **2. Review** | Code review, status report | "Current status?", "Any issues?" |
+| **3. New Feature** | Add new functionality | "Create component", "Add feature" |
+| **4. Bug Fix** | Resolve errors | "Fix this", "Error occurred", "Doesn't work" |
+| **5. Refactor** | Improve, optimize | "Make better", "Clean up", "Improve" |
+| **6. Evaluate** | Score, grade | "How many points?", "Quality?" ← **Only when user explicitly requests** |
+| **7. Validate** | Verify correctness | "Is this right?", "Test this", "Confirm" |
+| **8. Plan** | Planning, design | "How should I do this?", "Suggest approach" |
 
-**MECE 분류 기준:**
-- **Dimension 1 - 작업 성격:** 조회 (설명/리뷰) / 수정 (신규/버그/리팩토링) / 검증 (평가/검증/기획)
-- **Dimension 2 - 범위:** 단일 파일 / 다중 파일 / 프로젝트 전체
-- **Dimension 3 - 목적:** 이해 / 개선 / 생성 / 수정 / 검증
+**MECE Classification Criteria:**
+- **Dimension 1 - Work Nature:** Query (Explain/Review) / Modify (New/Bug/Refactor) / Verify (Evaluate/Validate/Plan)
+- **Dimension 2 - Scope:** Single file / Multiple files / Entire project
+- **Dimension 3 - Purpose:** Understand / Improve / Create / Modify / Verify
 
 ---
 
-## 📊 Score 시스템
+## 📊 Scoring System
 
-### Complexity Score (작업 난이도)
+### Complexity Score (Task Difficulty)
 
-**계산 공식:**
+**Calculation Formula:**
 ```python
 complexity_score = (
-    files_count * 0.5 +           # 파일 수
-    protected_files * 2.0 +       # Protected Files 수
-    code_lines / 500 +            # 코드 라인 수
-    ux_project_flag * 3.0 +       # UX 프로젝트 여부
-    policy_design_flag * 5.0      # 정책 설계 여부
+    files_count * 0.5 +           # Number of files
+    protected_files * 2.0 +       # Number of protected files
+    code_lines / 500 +            # Lines of code
+    ux_project_flag * 3.0 +       # UX project flag
+    policy_design_flag * 5.0      # Policy design flag
 )
 ```
 
-**임계값:**
-- **< 7.0:** Claude 단독 (1-2분)
-- **7.0-8.9:** gemini-collaboration (5분)
-- **≥ 9.0:** multi-ai-workflow 고려 (18분)
+**Thresholds:**
+- **< 7.0:** Claude Solo (1-2 minutes)
+- **7.0-8.9:** gemini-collaboration (5 minutes)
+- **≥ 9.0:** Consider multi-ai-workflow (18 minutes)
 
-**예시:**
-- 단순 질문 (1개 파일): 3.0-5.0
-- 중간 작업 (5-10개 파일): 7.0-8.5
-- 대규모 리팩토링 (15+ 파일): 9.0+
+**Examples:**
+- Simple question (1 file): 3.0-5.0
+- Medium task (5-10 files): 7.0-8.5
+- Large refactoring (15+ files): 9.0+
 
 ---
 
-### Policy Score (정책 변경 영향도)
+### Policy Score (Policy Change Impact)
 
-**계산 공식:**
+**Calculation Formula:**
 ```python
 policy_score = (
     policy_files_changed * 3.0 +  # CLAUDE.md, .skills/*.md
-    new_rules_added * 2.0 +        # rule_13, rule_14 등
-    policy_keywords * 1.0          # "CODEX", "정책 설계", "프로토콜"
+    new_rules_added * 2.0 +        # rule_13, rule_14, etc.
+    policy_keywords * 1.0          # "CODEX", "policy design", "protocol"
 )
 ```
 
-**임계값:**
-- **< 8.0:** CODEX 불필요
-- **≥ 8.0:** CODEX 권장 (4가지 조건 충족 시)
+**Thresholds:**
+- **< 8.0:** CODEX not needed
+- **≥ 8.0:** CODEX recommended (if all 4 conditions met)
 
-**CODEX 권장 조건 (Policy Score ≥ 8.0 + 모두 충족):**
-1. ⏱️ **긴급성 낮음** (1-2일 여유)
-2. 🎯 **완벽한 분석 필요** (100% 품질 요구)
-3. 💬 **사용자 명시 요청** ("CODEX 써줘")
-4. 🔓 **Plan Mode 해제** (API 호출 가능)
+**CODEX Recommendation Criteria (Policy Score ≥ 8.0 + ALL met):**
+1. ⏱️ **Low urgency** (1-2 day buffer)
+2. 🎯 **Perfect analysis needed** (100% quality requirement)
+3. 💬 **User explicitly requests** ("Use CODEX")
+4. 🔓 **Plan Mode disabled** (API calls allowed)
 
-**Emergency Override (즉시 Claude 단독):**
-- 긴급 키워드: "바로", "즉시", "긴급", "빨리"
-- Policy Score 무시
-- 속도 우선 (5분 vs CODEX 18분)
+**Emergency Override (Immediate Claude Solo):**
+- Emergency keywords: "immediately", "urgent", "quickly", "now", "right away"
+- Ignore Policy Score
+- Speed priority (5 min vs CODEX 18 min)
 
-**예시:**
-- CLAUDE.md 오타 수정: 3.0 (CODEX 불필요)
-- Rule 1개 추가: 5.0-7.0 (Claude 단독)
-- behavioral_rules 재설계: 9.0+ (CODEX 강력 권장)
+**Examples:**
+- CLAUDE.md typo fix: 3.0 (CODEX not needed)
+- Add 1 rule: 5.0-7.0 (Claude Solo)
+- Redesign behavioral_rules: 9.0+ (CODEX strongly recommended)
 
 ---
 
 ## 🔓 Plan Mode
 
-**정의:**
-- Analysis-only mode (외부 API 차단)
-- Gemini/CODEX API 호출 불가
-- Write/Edit 제한적 허용
+**Definition:**
+- Analysis-only mode (external API blocked)
+- Gemini/CODEX API calls disabled
+- Write/Edit limited
 
-**자동 해제 트리거 (Plan Mode Override):**
+**Auto-Disable Triggers (Plan Mode Override):**
 ```python
-# 1. 딥리서치 키워드 감지
+# 1. Deep research keyword detection
 DEEP_RESEARCH_KEYWORDS = [
-    "딥리서치", "deep research", "깊은 분석", "전체 분석",
-    "comprehensive analysis", "thorough analysis", "완전한 분석"
+    "deep research", "thorough analysis", "complete analysis",
+    "comprehensive analysis", "in-depth analysis", "full analysis"
 ]
 
 if any(keyword in user_message.lower() for keyword in DEEP_RESEARCH_KEYWORDS):
-    # Plan Mode 자동 해제
+    # Auto-disable Plan Mode
     plan_mode = False
-    complexity_score = max(complexity_score, 8.0)  # Gemini 강제 활성화
+    complexity_score = max(complexity_score, 8.0)  # Force Gemini activation
     workflow = "gemini-collaboration"
 
-    # Self-Check 표시
-    print("🔓 Plan Mode: 해제 (🔍 딥리서치 요청 → Gemini 필요)")
+    # Self-Check display
+    print("🔓 Plan Mode: Disabled (🔍 Deep research request → Gemini needed)")
 
-# 2. Emergency 키워드 감지
-EMERGENCY_KEYWORDS = ["바로", "즉시", "긴급", "빨리", "지금", "당장"]
+# 2. Emergency keyword detection
+EMERGENCY_KEYWORDS = ["immediately", "urgent", "quickly", "now", "right away", "asap"]
 
 if any(keyword in user_message for keyword in EMERGENCY_KEYWORDS):
-    # Plan Mode 제약 일부 무시
+    # Partially ignore Plan Mode constraints
     allow_limited_edit = True
 
-    # Self-Check 표시
-    print("🔓 Plan Mode: 활성 (⚡ Emergency Override → 제한적 수정 허용)")
+    # Self-Check display
+    print("🔓 Plan Mode: Active (⚡ Emergency Override → Limited edits allowed)")
 ```
 
-**일반적인 Plan Mode 감지:**
+**Standard Plan Mode Detection:**
 ```python
 if plan_mode_active:
     external_api_blocked = True
@@ -145,44 +145,44 @@ if plan_mode_active:
     codex_blocked = True
 ```
 
-**대응:**
-1. **Gemini 필요 시:**
-   - Ask user: "A) Sub Agent? B) Plan Mode 해제?"
+**Response:**
+1. **When Gemini needed:**
+   - Ask user: "A) Sub Agent? B) Disable Plan Mode?"
 
-2. **CODEX 필요 시 (Policy Score ≥ 8.0):**
-   - STRONG recommend: "Plan Mode 해제 → CODEX (100% 품질)"
-   - Fallback: Sub Agent (85-90% 품질)
+2. **When CODEX needed (Policy Score ≥ 8.0):**
+   - STRONG recommend: "Disable Plan Mode → CODEX (100% quality)"
+   - Fallback: Sub Agent (85-90% quality)
 
-3. **딥리서치 요청 시:**
-   - 자동 해제 (사용자 확인 불필요)
-   - Gemini 자동 활성화
-   - Complexity Score ≥ 8.0 강제 설정
+3. **When deep research requested:**
+   - Auto-disable (no user confirmation needed)
+   - Auto-activate Gemini
+   - Force Complexity Score ≥ 8.0
 
 ---
 
 ## 🚨 Emergency Override
 
-**자동 감지 키워드:**
-- "바로", "즉시", "긴급", "빨리", "지금", "당장"
+**Auto-Detection Keywords:**
+- "immediately", "urgent", "quickly", "now", "right away", "asap"
 
-**Override 로직:**
+**Override Logic:**
 ```python
 if emergency_detected:
     ignore(complexity_score)
     ignore(policy_score)
     ignore(codex_recommendation)
 
-    workflow = "Claude 단독 (Emergency)"
-    estimated_time = "2-5분"
+    workflow = "Claude Solo (Emergency)"
+    estimated_time = "2-5 minutes"
 
     log("Emergency Override: Speed > Quality")
 ```
 
-**Self-Check 표시:**
+**Self-Check Display:**
 ```
-📊 Policy Score: 12.0점 (≥8.0=CODEX 권장)
-  - ⚠️ Emergency Override: 사용자 즉시 개선 요청 → Claude 단독 선택
-  - 🚫 CODEX 미사용 이유: 긴급성 (즉시 개선) + Plan Mode 활성
+📊 Policy Score: 12.0 (≥8.0=CODEX recommended)
+  - ⚠️ Emergency Override: User requests immediate fix → Claude Solo chosen
+  - 🚫 CODEX not used: Urgency (immediate fix) + Plan Mode active
 ```
 
 ---
@@ -190,21 +190,21 @@ if emergency_detected:
 ## 🎯 Workflow Decision Tree
 
 ```
-사용자 요청
+User Request
     │
-    ├─ 딥리서치? ("딥리서치"/"deep research"/"깊은 분석") ← NEW
-    │   └─ YES → Plan Mode 자동 해제
-    │           → Complexity Score ≥ 8.0 강제 설정
-    │           → Gemini 자동 활성화
-    │           → Self-Check: 🔓 Plan Mode: 해제 (🔍 딥리서치 → Gemini)
+    ├─ Deep research? ("deep research"/"thorough analysis"/"complete analysis") ← NEW
+    │   └─ YES → Auto-disable Plan Mode
+    │           → Force Complexity Score ≥ 8.0
+    │           → Auto-activate Gemini
+    │           → Self-Check: 🔓 Plan Mode: Disabled (🔍 Deep research → Gemini)
     │
-    ├─ 긴급? ("바로"/"즉시"/"빨리")
-    │   └─ YES → Claude 단독 (Emergency Override)
-    │           → Self-Check에 Emergency Override 표시
+    ├─ Emergency? ("immediately"/"urgent"/"quickly")
+    │   └─ YES → Claude Solo (Emergency Override)
+    │           → Display Emergency Override in Self-Check
     │
-    ├─ Complexity Score 계산
+    ├─ Calculate Complexity Score
     │   │
-    │   ├─ < 7.0 → Claude 단독
+    │   ├─ < 7.0 → Claude Solo
     │   │
     │   ├─ 7.0-8.9 → gemini-collaboration
     │   │   │
@@ -212,18 +212,18 @@ if emergency_detected:
     │   │       ├─ Yes → Ask user (Sub Agent or Exit Plan)
     │   │       └─ No → Gemini
     │   │
-    │   └─ ≥ 9.0 → Policy Score 확인
+    │   └─ ≥ 9.0 → Check Policy Score
     │       │
     │       ├─ Policy < 8.0 → gemini-collaboration
     │       │
-    │       └─ Policy ≥ 8.0 → 4가지 조건 확인
+    │       └─ Policy ≥ 8.0 → Check 4 conditions
     │           │
-    │           ├─ 조건 모두 충족 → multi-ai-workflow (CODEX)
+    │           ├─ All conditions met → multi-ai-workflow (CODEX)
     │           │
-    │           └─ 조건 불충족 → Claude 단독
-    │               └─ Self-Check에 미사용 이유 표시
+    │           └─ Conditions not met → Claude Solo
+    │               └─ Display reason in Self-Check
     │
-    └─ 사용자 명시 ("Claude만"/"Gemini"/"CODEX"/"딥리서치")
+    └─ User explicitly specifies ("Claude only"/"Gemini"/"CODEX"/"deep research")
         └─ Override all scores → User choice
 ```
 
@@ -232,68 +232,68 @@ if emergency_detected:
 ## 📝 Usage Notes
 
 **MANDATORY:**
-- 모든 응답은 Self-Check으로 시작
-- 이어가기 세션: behavioral_rules (Lines 7-34) 재확인
-- 응답 길이 300+ 예상: 사용자에게 먼저 물어보기
+- All responses start with Self-Check
+- Continuation session: Recheck behavioral_rules (Lines 7-34)
+- Expected response length 300+: Ask user first
 
 **Self-Check Before Response:**
-1. 세션 타입 확인 (새 세션 / 이어가기)
-2. 사용자 언어 확인 (한글 / English)
-3. **딥리서치 키워드 감지** ← NEW
-   - "딥리서치", "deep research", "깊은 분석", "전체 분석" 등
-   - 감지 시: Plan Mode 자동 해제 + Gemini 활성화
-4. 중복 설명 제거
-5. 응답 예상 길이 체크
-6. Emergency Override 감지
+1. Check session type (new session / continuation)
+2. Check user language (Korean / English)
+3. **Detect deep research keywords** ← NEW
+   - "deep research", "thorough analysis", "complete analysis", etc.
+   - If detected: Auto-disable Plan Mode + Activate Gemini
+4. Remove duplicate explanations
+5. Check expected response length
+6. Detect Emergency Override
 
-**Policy Score ≥ 8.0 but CODEX 미사용 시:**
-- Self-Check에 반드시 이유 명시
-- 예: "⚠️ Emergency Override: 긴급성 우선"
-- 예: "🚫 CODEX 미사용 이유: Plan Mode 활성 + 사용자 '바로 시작' 요청"
-
----
-
-## 🔓 Plan Mode 상태 표시 규칙
-
-### 활성 (Plan Mode: 활성)
-
-**표시 형식:** `🔓 Plan Mode: 활성 (이모지 + 이유)`
-
-| 이유 | 이모지 | 표시 예시 |
-|------|--------|-----------|
-| 읽기 전용 요청 | 📖 | `🔓 Plan Mode: 활성 (📖 설명/리뷰 요청 = 읽기 전용)` |
-| 분석 전용 요청 | 🔍 | `🔓 Plan Mode: 활성 (🔍 분석만 요청, 수정 없음)` |
-| 계획 단계 | 📋 | `🔓 Plan Mode: 활성 (📋 계획 수립 중, 실행 전)` |
-| 외부 API 차단 | 🚫 | `🔓 Plan Mode: 활성 (🚫 시스템 제약, 외부 API 차단)` |
-| 검토 단계 | 👀 | `🔓 Plan Mode: 활성 (👀 코드 검토만, 변경 없음)` |
-| Emergency 수정 허용 | ⚡ | `🔓 Plan Mode: 활성 (⚡ Emergency Override → 제한적 수정 허용)` |
+**When Policy Score ≥ 8.0 but CODEX not used:**
+- Must specify reason in Self-Check
+- Example: "⚠️ Emergency Override: Urgency prioritized"
+- Example: "🚫 CODEX not used: Plan Mode active + User requested 'start immediately'"
 
 ---
 
-### 해제 (Plan Mode: 해제)
+## 🔓 Plan Mode Status Display Rules
 
-**표시 형식:** `🔓 Plan Mode: 해제 (이모지 + 이유)`
+### Active (Plan Mode: Active)
 
-| 이유 | 이모지 | 표시 예시 |
-|------|--------|-----------|
-| 파일 수정 작업 | ✏️ | `🔓 Plan Mode: 해제 (✏️ 파일 수정 필요)` |
-| 코드 구현 | 💻 | `🔓 Plan Mode: 해제 (💻 코드 작성 중)` |
-| Git 커밋 | 📦 | `🔓 Plan Mode: 해제 (📦 커밋 작업)` |
-| 외부 API 사용 | 🌐 | `🔓 Plan Mode: 해제 (🌐 Gemini/CODEX 필요)` |
-| 사용자 선택 | 👤 | `🔓 Plan Mode: 해제 (👤 사용자가 Exit 선택)` |
-| **딥리서치 요청** | 🔍 | `🔓 Plan Mode: 해제 (🔍 딥리서치 → Gemini 필요)` |
+**Display Format:** `🔓 Plan Mode: Active (emoji + reason)`
+
+| Reason | Emoji | Display Example |
+|--------|-------|-----------------|
+| Read-only request | 📖 | `🔓 Plan Mode: Active (📖 Explain/Review request = read-only)` |
+| Analysis-only request | 🔍 | `🔓 Plan Mode: Active (🔍 Analysis only, no modifications)` |
+| Planning phase | 📋 | `🔓 Plan Mode: Active (📋 Planning stage, before execution)` |
+| External API blocked | 🚫 | `🔓 Plan Mode: Active (🚫 System constraint, external API blocked)` |
+| Review phase | 👀 | `🔓 Plan Mode: Active (👀 Code review only, no changes)` |
+| Emergency edit allowed | ⚡ | `🔓 Plan Mode: Active (⚡ Emergency Override → Limited edits allowed)` |
 
 ---
 
-### 사용자 승인 대기 (Plan Mode: 사용자 승인)
+### Disabled (Plan Mode: Disabled)
 
-**표시 형식:** `🔓 Plan Mode: 사용자 승인 (이모지 + 상황)`
+**Display Format:** `🔓 Plan Mode: Disabled (emoji + reason)`
 
-| 상황 | 이모지 | 표시 예시 |
-|------|--------|-----------|
-| Gemini 필요하나 차단 | ⚠️ | `🔓 Plan Mode: 사용자 승인 (⚠️ Gemini 차단 → A) Sub Agent? B) Exit Plan?)` |
-| CODEX 권장되나 차단 | 🔴 | `🔓 Plan Mode: 사용자 승인 (🔴 CODEX 권장 but 차단 → 선택 필요)` |
-| 품질 트레이드오프 | ⚖️ | `🔓 Plan Mode: 사용자 승인 (⚖️ 85% 품질 vs 100% 품질 선택)` |
+| Reason | Emoji | Display Example |
+|--------|-------|-----------------|
+| File modification needed | ✏️ | `🔓 Plan Mode: Disabled (✏️ File modification required)` |
+| Code implementation | 💻 | `🔓 Plan Mode: Disabled (💻 Writing code)` |
+| Git commit | 📦 | `🔓 Plan Mode: Disabled (📦 Commit operation)` |
+| External API use | 🌐 | `🔓 Plan Mode: Disabled (🌐 Gemini/CODEX needed)` |
+| User choice | 👤 | `🔓 Plan Mode: Disabled (👤 User chose Exit)` |
+| **Deep research request** | 🔍 | `🔓 Plan Mode: Disabled (🔍 Deep research → Gemini needed)` |
+
+---
+
+### User Approval Pending (Plan Mode: User Approval)
+
+**Display Format:** `🔓 Plan Mode: User Approval (emoji + situation)`
+
+| Situation | Emoji | Display Example |
+|-----------|-------|-----------------|
+| Gemini needed but blocked | ⚠️ | `🔓 Plan Mode: User Approval (⚠️ Gemini blocked → A) Sub Agent? B) Exit Plan?)` |
+| CODEX recommended but blocked | 🔴 | `🔓 Plan Mode: User Approval (🔴 CODEX recommended but blocked → Choice needed)` |
+| Quality trade-off | ⚖️ | `🔓 Plan Mode: User Approval (⚖️ 85% quality vs 100% quality choice)` |
 
 ---
 
@@ -324,7 +324,7 @@ if about_to_call(Task, subagent_type="*"):
 
 # 2. User mentions Multi-AI keywords
 MULTI_AI_KEYWORDS = [
-    "Gemini", "CODEX", "앙상블", "협력", "Sub Agent",
+    "Gemini", "CODEX", "ensemble", "collaboration", "Sub Agent",
     "gemini-collaboration", "multi-ai-workflow"
 ]
 
@@ -335,21 +335,21 @@ if any(keyword in user_message for keyword in MULTI_AI_KEYWORDS):
 
 ---
 
-### 사용자 승인 요청 템플릿
+### User Approval Request Template
 
 ```
-🔔 Multi-AI 사전 승인 요청
+🔔 Multi-AI Pre-Approval Request
 
-모델: [Gemini / CODEX / Sub Agent]
-작업: [간단한 설명]
-이유: [왜 Multi-AI가 필요한가]
-소요 시간: [예상 시간]
-비용: [무료 / $0.25 / $0.50-0.70]
+Model: [Gemini / CODEX / Sub Agent]
+Task: [Brief description]
+Reason: [Why Multi-AI is needed]
+Estimated Time: [Expected duration]
+Cost: [Free / $0.25 / $0.50-0.70]
 
-Multi-AI 진행할까요? (yes/no/why)
-- yes: 워크플로우 실행
-- no: Claude 단독 진행 (Multi-AI 사용 안 함)
-- why: 이유 설명 + 다시 물어보기
+Proceed with Multi-AI? (yes/no/why)
+- yes: Execute workflow
+- no: Continue with Claude solo (no Multi-AI)
+- why: Explain reason + ask again
 ```
 
 ---

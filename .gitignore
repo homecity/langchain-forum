@@ -43,3 +43,6 @@ backend/data/embeddings.json
 coverage/
 .coverage
 htmlcov/
+
+# Personal documents (not for public repo)
+personal_docs/
