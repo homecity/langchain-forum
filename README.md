@@ -1,5 +1,7 @@
 # LangChain RAG Development System
 
+> 📖 [한국어 문서](README_kr.md)
+
 Framework-agnostic RAG (Retrieval-Augmented Generation) system with LangSmith observability.
 
 ## Overview

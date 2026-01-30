@@ -46,3 +46,9 @@ htmlcov/
 
 # Personal documents (not for public repo)
 personal_docs/
+
+# Binary data files
+*.h2d
+
+# Internal tools
+.sisyphus/
