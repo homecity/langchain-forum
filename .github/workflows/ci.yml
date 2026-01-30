@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, develop]
 
+defaults:
+  run:
+    working-directory: app
+
 jobs:
   # Job 1: Type Check (BLOCKING)
   type-check:
@@ -20,6 +24,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -40,6 +45,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -60,6 +66,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -71,7 +78,7 @@ jobs:
         uses: codecov/codecov-action@v4
         if: always()
         with:
-          files: ./coverage/lcov.info
+          files: app/coverage/lcov.info
           flags: ui-tests
 
   # Job 4: Unit Tests - RAG (90% coverage)
@@ -87,6 +94,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -100,7 +108,7 @@ jobs:
         uses: codecov/codecov-action@v4
         if: always()
         with:
-          files: ./coverage/lcov.info
+          files: app/coverage/lcov.info
           flags: rag-tests
 
   # Job 5: E2E Tests - API (BLOCKING)
@@ -117,6 +125,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -135,7 +144,7 @@ jobs:
         if: always()
         with:
           name: playwright-api-report
-          path: playwright-report/
+          path: app/playwright-report/
           retention-days: 30
 
   # Job 6: E2E Tests - App (BLOCKING)
@@ -152,6 +161,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -169,7 +179,7 @@ jobs:
         if: always()
         with:
           name: playwright-app-report
-          path: playwright-report/
+          path: app/playwright-report/
           retention-days: 30
 
   # Job 7: Build (BLOCKING)
@@ -186,6 +196,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
