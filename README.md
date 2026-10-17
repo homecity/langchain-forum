@@ -273,6 +273,9 @@ npm run build
 2. Verify embedding dimensions (should be 1536)
 3. Try adjusting `RETRIEVAL_TOP_K` and `RERANK_TOP_K`
 
+For stale or missing context, [compare RAG answers with current documentation](docs/current-documentation-research.md)
+using an external Parallel Search MCP client.
+
 ### Hallucinations in Answers
 
 1. Check Faithfulness score in LangSmith
